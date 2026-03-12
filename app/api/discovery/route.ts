@@ -81,7 +81,6 @@ export async function POST(req: Request) {
                 place_id:     l.placeId      ?? null,
                 rating:       l.rating       ?? null,
                 review_count: l.reviewCount  ?? null,
-                source:       'google-native',
               })),
               { onConflict: 'place_id', ignoreDuplicates: true },
             )
@@ -95,6 +94,28 @@ export async function POST(req: Request) {
           } else {
             console.log(`[discovery/route] ✅ companies upsert OK — ${result.leads.length} rows`)
           }
+
+          // ── Persist raw scraper payloads ───────────────────────────────────
+          const { error: rawErr } = await supabaseAdmin
+            .from('scrape_results_raw')
+            .insert(
+              result.leads.map((l) => ({
+                source:      'maps',
+                external_id: l.placeId ?? null,
+                raw_payload: {
+                  name:         l.name,
+                  place_id:     l.placeId,
+                  address:      l.address,
+                  phone:        l.phone,
+                  website:      l.website,
+                  rating:       l.rating,
+                  review_count: l.reviewCount,
+                  city:         l.city,
+                  state:        l.state,
+                },
+              })),
+            )
+          if (rawErr) console.error('[discovery/route] scrape_results_raw insert:', rawErr.message)
         }
 
         // ── Insert discovery_jobs row ─────────────────────────────────────
@@ -103,6 +124,7 @@ export async function POST(req: Request) {
         const { data: jobData, error: jobErr } = await supabaseAdmin
           .from('discovery_jobs')
           .insert({
+            name:          `${params.niche}${params.city ? ` — ${params.city}` : ''}`,
             source:        'google-native',
             niche:         params.niche,
             city:          params.city    ?? null,

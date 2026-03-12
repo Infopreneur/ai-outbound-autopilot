@@ -68,24 +68,58 @@ export async function POST(req: Request) {
 
     // Persist all leads to Supabase
     if (leads.length > 0) {
-      const { error } = await supabaseAdmin
+      const { error: companyErr } = await supabaseAdmin
         .from('companies')
-        .insert(
+        .upsert(
           leads.map((l) => ({
             name:         l.name,
+            place_id:     l.placeId      ?? null,
             city:         l.city         ?? null,
             state:        l.state        ?? null,
             rating:       l.rating       ?? null,
             review_count: l.reviewCount  ?? null,
-            address:      l.address      ?? null,
             phone:        l.phone        ?? null,
             website:      l.website      ?? null,
-            source:       'maps',
           })),
+          { onConflict: 'place_id', ignoreDuplicates: true },
         )
 
-      if (error) console.error('[maps/route] companies insert:', error.message)
+      if (companyErr) console.error('[maps/route] companies upsert:', companyErr.message)
+
+      // Persist raw payloads for future enrichment / reprocessing
+      const { error: rawErr } = await supabaseAdmin
+        .from('scrape_results_raw')
+        .insert(
+          leads.map((l) => ({
+            source:      'maps',
+            external_id: l.placeId ?? null,
+            raw_payload: {
+              name:         l.name,
+              place_id:     l.placeId,
+              address:      l.address,
+              phone:        l.phone,
+              website:      l.website,
+              rating:       l.rating,
+              review_count: l.reviewCount,
+              city:         l.city,
+              state:        l.state,
+            },
+          })),
+        )
+      if (rawErr) console.error('[maps/route] scrape_results_raw insert:', rawErr.message)
     }
+
+    await supabaseAdmin
+      .from('discovery_jobs')
+      .insert({
+        name:          `${effectiveNiche}${city ? ` — ${city.trim()}` : ''}`,
+        source:        'maps',
+        niche:         effectiveNiche,
+        city:          city.trim(),
+        state:         typeof state === 'string' ? state.trim() : null,
+        status:        'completed',
+        results_count: leads.length,
+      })
 
     logUsage({
       provider:     'google',

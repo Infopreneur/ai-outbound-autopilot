@@ -2,7 +2,7 @@
  * GET  /api/discovery/jobs  — list all discovery jobs (newest first)
  * POST /api/discovery/jobs  — create a pending job record without running it
  */
-
+console.log("DISCOVERY ROUTE HIT")
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllJobs, getJobsByStatus } from '@/lib/discovery/job-runner'
 import { mockDiscoveryJobs }          from '@/lib/mock/system-health'
