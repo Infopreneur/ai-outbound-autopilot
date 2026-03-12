@@ -26,10 +26,10 @@ interface SourceDef {
 }
 
 const SOURCES: SourceDef[] = [
-  { value: 'google-places', label: 'Google Maps (Native)', icon: '🗺️', endpoint: '/api/discovery/sources/maps' },
-  { value: 'apify',         label: 'Google Maps (Apify)',  icon: '⚡', endpoint: '/api/discovery/run' },
-  { value: 'yelp',          label: 'Yelp',                 icon: '⭐', endpoint: '/api/discovery/sources/yelp', badge: 'soon' },
-  { value: 'manual',        label: 'Manual',               icon: '✏️', endpoint: '',                            badge: 'soon' },
+  { value: 'google-places', label: 'Google Maps (Native)', icon: '🗺️', endpoint: '/api/discovery' },
+  { value: 'apify',         label: 'Google Maps (Apify)',  icon: '⚡', endpoint: '/api/discovery' },
+  { value: 'yelp',          label: 'Yelp (ScraperAPI)',    icon: '⭐', endpoint: '/api/discovery', badge: 'soon' },
+  { value: 'manual',        label: 'Manual Entry',         icon: '✏️', endpoint: '',               badge: 'soon' },
 ]
 
 const MAX_OPTIONS = [10, 25, 50, 100, 200]
