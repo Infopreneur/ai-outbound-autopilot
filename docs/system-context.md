@@ -256,7 +256,7 @@ ALTER TABLE companies
 
 - [ ] `/companies/[id]` detail page still uses mock data — needs real Supabase fetch
 - [ ] `/pipeline`, `/outreach`, `/demo-studio` pages use mock data
-- [ ] Vercel Hobby plan limits cron to once/day (`0 9 * * *`) — upgrade to Pro for per-minute
+- [x] Cron solved: cron-job.org fires `GET /api/workers/discovery` every 5 minutes (free, bypasses Vercel Hobby limit)
 - [ ] Apify is mocked in dev — real actor `compass/google-maps-scraper` needs `APIFY_API_TOKEN` env var
 - [ ] `niche` column in companies only populated on new discovery runs (existing rows have null)
 - [ ] Export button on prospecting page is UI-only (no CSV download yet)
@@ -264,16 +264,11 @@ ALTER TABLE companies
 
 ---
 
-## Vercel Cron
+## Cron Setup
 
-```json
-// vercel.json
-{
-  "crons": [{ "path": "/api/workers/discovery", "schedule": "0 9 * * *" }]
-}
-```
+`vercel.json` still has `"schedule": "0 9 * * *"` as a fallback (Hobby plan only allows once/day).
 
-Hobby plan: max 1 execution/day. Pro plan: can run `* * * * *` (every minute).
+**Actual cron:** [cron-job.org](https://cron-job.org) (free external service) fires `GET /api/workers/discovery` every **5 minutes**. This bypasses Vercel's Hobby plan cron limit entirely. No code changes needed — the worker endpoint is a plain GET and accepts calls from anywhere.
 
 ---
 
