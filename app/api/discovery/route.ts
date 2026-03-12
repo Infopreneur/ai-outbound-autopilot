@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         if (result.leads.length > 0) {
           console.log(`[discovery/route] upserting ${result.leads.length} companies to Supabase…`)
 
-          const { data: companyData, error: companyErr } = await supabaseAdmin
+          const { error: companyErr } = await supabaseAdmin
             .from('companies')
             .upsert(
               result.leads.map((l) => ({
@@ -82,6 +82,7 @@ export async function POST(req: Request) {
                 rating:       l.rating       ?? null,
                 review_count: l.reviewCount  ?? null,
                 niche:        params.niche,
+                source:       'google-native',
               })),
               { onConflict: 'place_id', ignoreDuplicates: true },
             )
@@ -196,6 +197,7 @@ export async function POST(req: Request) {
                 rating:       l.rating       ?? null,
                 review_count: l.reviewCount  ?? null,
                 niche:        params.niche,
+                source:       'apify',
               })),
               { onConflict: 'place_id', ignoreDuplicates: true },
             )

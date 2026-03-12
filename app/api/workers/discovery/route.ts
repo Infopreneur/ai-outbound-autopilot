@@ -62,6 +62,7 @@ export async function GET() {
             phone:        l.phone        ?? null,
             website:      l.website      ?? null,
             niche:        job.keyword,
+            source:       'google-native',
           })),
           { onConflict: 'place_id', ignoreDuplicates: true },
         )
