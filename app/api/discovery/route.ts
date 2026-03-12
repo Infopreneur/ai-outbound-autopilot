@@ -15,10 +15,11 @@
  * }
  */
 
-import { NextResponse }                   from 'next/server'
-import { runGooglePlacesDiscovery }        from '@/lib/discovery/google-places'
-import { runApifySource }                  from '@/lib/discovery/sources/apify'
-import { logUsage }                        from '@/lib/usage/cost-tracker'
+import { NextResponse }                      from 'next/server'
+import { runGooglePlacesDiscovery }           from '@/lib/discovery/google-places'
+import { runApifySource }                     from '@/lib/discovery/sources/apify'
+import { logUsage }                           from '@/lib/usage/cost-tracker'
+import { supabaseAdmin }                      from '@/lib/supabase/server'
 import type { DiscoveryRunParams, JobSource } from '@/lib/discovery/types'
 
 const VALID_SOURCES: JobSource[] = ['google-places', 'apify', 'maps', 'yelp', 'manual']
@@ -58,8 +59,47 @@ export async function POST(req: Request) {
 
       case 'google-places':
       case 'maps': {
-        const result = await runGooglePlacesDiscovery(params)
+        const startedAt = new Date().toISOString()
+        const result    = await runGooglePlacesDiscovery(params)
+        const completedAt = new Date().toISOString()
 
+        // ── Upsert companies (conflict on place_id) ──────────────────────
+        if (result.leads.length > 0) {
+          const { error: companyErr } = await supabaseAdmin
+            .from('companies')
+            .upsert(
+              result.leads.map((l) => ({
+                name:         l.name,
+                website:      l.website      ?? null,
+                phone:        l.phone        ?? null,
+                city:         l.city         ?? null,
+                state:        l.state        ?? null,
+                place_id:     l.placeId      ?? null,
+                rating:       l.rating       ?? null,
+                review_count: l.reviewCount  ?? null,
+                source:       'google-native',
+              })),
+              { onConflict: 'place_id', ignoreDuplicates: true },
+            )
+
+          if (companyErr) console.error('[discovery/route] companies upsert:', companyErr.message)
+        }
+
+        // ── Insert discovery_jobs row ─────────────────────────────────────
+        const { error: jobErr } = await supabaseAdmin
+          .from('discovery_jobs')
+          .insert({
+            source:        'google-native',
+            niche:         params.niche,
+            city:          params.city    ?? null,
+            state:         params.state   ?? null,
+            status:        'completed',
+            results_count: result.leads.length,
+          })
+
+        if (jobErr) console.error('[discovery/route] discovery_jobs insert:', jobErr.message)
+
+        // ── Log usage ─────────────────────────────────────────────────────
         logUsage({
           provider:     'google',
           service:      'maps-places-api',
@@ -84,8 +124,8 @@ export async function POST(req: Request) {
             costEstimate:    result.estimatedCost,
             keywords:        result.keywords,
             usedFallback:    result.usedFallback,
-            startedAt:       new Date().toISOString(),
-            completedAt:     new Date().toISOString(),
+            startedAt,
+            completedAt,
           },
           leads: result.leads,
           count: result.leads.length,

@@ -68,6 +68,7 @@ export async function runMapsSource(params: DiscoveryRunParams): Promise<MapsSou
       state:        state                 || undefined,
       rating:       n.rating              ?? undefined,
       reviewCount:  n.review_count > 0 ? n.review_count : undefined,
+      placeId:      n.place_id,
       sourceJob:    jobId,
       rawSource:    'maps',
       normalizedAt: new Date().toISOString(),

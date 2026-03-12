@@ -55,6 +55,8 @@ export interface NormalizedCompanyLead {
   rating?: number
   reviewCount?: number
   linkedinUrl?: string
+  /** Google Places unique place ID — used for upsert deduplication */
+  placeId?: string
   sourceJob: string
   sourceUrl?: string
   rawSource: JobSource
