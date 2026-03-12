@@ -81,6 +81,7 @@ export async function POST(req: Request) {
                 place_id:     l.placeId      ?? null,
                 rating:       l.rating       ?? null,
                 review_count: l.reviewCount  ?? null,
+                niche:        params.niche,
               })),
               { onConflict: 'place_id', ignoreDuplicates: true },
             )
@@ -179,6 +180,28 @@ export async function POST(req: Request) {
 
       case 'apify': {
         const result = await runApifySource(params)
+
+        // ── Upsert companies ──────────────────────────────────────────────
+        if (result.leads.length > 0) {
+          const { error: companyErr } = await supabaseAdmin
+            .from('companies')
+            .upsert(
+              result.leads.map((l) => ({
+                name:         l.name,
+                website:      l.website      ?? null,
+                phone:        l.phone        ?? null,
+                city:         l.city         ?? null,
+                state:        l.state        ?? null,
+                place_id:     l.placeId      ?? null,
+                rating:       l.rating       ?? null,
+                review_count: l.reviewCount  ?? null,
+                niche:        params.niche,
+              })),
+              { onConflict: 'place_id', ignoreDuplicates: true },
+            )
+          if (companyErr) console.error('[apify] companies upsert:', companyErr.message)
+          else console.log(`[apify] ✅ companies upsert OK — ${result.leads.length} rows`)
+        }
 
         logUsage({
           provider:     'apify',
