@@ -25,6 +25,8 @@ import { supabaseAdmin }            from '@/lib/supabase/server'
 import { logUsage }                 from '@/lib/usage/cost-tracker'
 
 export async function POST(req: Request) {
+  console.log('🗺️  POST /api/discovery/sources/maps HIT')
+
   let body: Record<string, unknown>
   try {
     body = await req.json()

@@ -25,6 +25,8 @@ import type { DiscoveryRunParams, JobSource } from '@/lib/discovery/types'
 const VALID_SOURCES: JobSource[] = ['google-places', 'apify', 'maps', 'yelp', 'manual']
 
 export async function POST(req: Request) {
+  console.log('🎯 POST /api/discovery HIT')
+
   let body: Record<string, unknown>
   try {
     body = await req.json()
@@ -85,9 +87,13 @@ export async function POST(req: Request) {
             )
 
           if (companyErr) {
-            console.error('[discovery/route] companies upsert ERROR:', companyErr.message, companyErr)
+            console.error('[discovery/route] ❌ companies upsert FAILED')
+            console.error('  message:', companyErr.message)
+            console.error('  code:   ', companyErr.code)
+            console.error('  details:', companyErr.details)
+            console.error('  hint:   ', companyErr.hint)
           } else {
-            console.log('[discovery/route] companies upsert OK:', companyData)
+            console.log(`[discovery/route] ✅ companies upsert OK — ${result.leads.length} rows`)
           }
         }
 
@@ -107,9 +113,13 @@ export async function POST(req: Request) {
           .select()
 
         if (jobErr) {
-          console.error('[discovery/route] discovery_jobs insert ERROR:', jobErr.message, jobErr)
+          console.error('[discovery/route] ❌ discovery_jobs insert FAILED')
+          console.error('  message:', jobErr.message)
+          console.error('  code:   ', jobErr.code)
+          console.error('  details:', jobErr.details)
+          console.error('  hint:   ', jobErr.hint)
         } else {
-          console.log('[discovery/route] discovery_jobs insert OK:', jobData)
+          console.log('[discovery/route] ✅ discovery_jobs insert OK:', jobData)
         }
 
         // ── Log usage ─────────────────────────────────────────────────────
