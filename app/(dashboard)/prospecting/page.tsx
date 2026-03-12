@@ -17,9 +17,19 @@ const industries  = ['All', 'SaaS', 'FinTech', 'MarTech', 'AI/ML', 'Cloud Infras
 const statuses    = ['All', 'hot', 'warm', 'cold', 'contacted', 'qualified']
 const scoreRanges = ['All', '90+', '75–89', '60–74', 'Below 60']
 
-const SOURCES: { value: JobSource; label: string; icon: string; endpoint: string }[] = [
-  { value: 'apify', label: 'Apify Scraper',       icon: '⚡', endpoint: '/api/discovery/run' },
-  { value: 'maps',  label: 'Google Maps (Direct)', icon: '🗺️', endpoint: '/api/discovery/sources/maps' },
+interface SourceDef {
+  value:    JobSource
+  label:    string
+  icon:     string
+  endpoint: string
+  badge?:   'soon'
+}
+
+const SOURCES: SourceDef[] = [
+  { value: 'google-places', label: 'Google Maps (Native)', icon: '🗺️', endpoint: '/api/discovery/sources/maps' },
+  { value: 'apify',         label: 'Google Maps (Apify)',  icon: '⚡', endpoint: '/api/discovery/run' },
+  { value: 'yelp',          label: 'Yelp',                 icon: '⭐', endpoint: '/api/discovery/sources/yelp', badge: 'soon' },
+  { value: 'manual',        label: 'Manual',               icon: '✏️', endpoint: '',                            badge: 'soon' },
 ]
 
 const MAX_OPTIONS = [10, 25, 50, 100, 200]
@@ -30,7 +40,7 @@ interface RunResult { job: DiscoveryJob; leads: NormalizedCompanyLead[]; count: 
 
 function DiscoveryPanel() {
   const [open, setOpen]         = useState(true)
-  const [source, setSource]     = useState<JobSource>('apify')
+  const [source, setSource]     = useState<JobSource>('google-places')
   const [niche, setNiche]       = useState('')
   const [city, setCity]         = useState('')
   const [state, setState]       = useState('')
@@ -40,13 +50,16 @@ function DiscoveryPanel() {
   const [error, setError]       = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
 
+  const activeSourceDef = SOURCES.find((s) => s.value === source) ?? SOURCES[0]
+  const isComingSoon    = activeSourceDef.badge === 'soon'
+  const canRun          = !isComingSoon && !!niche.trim() && runState !== 'running'
+
   async function handleRun() {
-    if (!niche.trim()) return
+    if (!canRun) return
     setRunState('running'); setError(null); setResult(null); setProgress(0)
     const ticker = setInterval(() => setProgress((p) => Math.min(p + Math.random() * 15, 85)), 400)
     try {
-      const activeSource = SOURCES.find((s) => s.value === source) ?? SOURCES[0]
-      const res = await fetch(activeSource.endpoint, {
+      const res = await fetch(activeSourceDef.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ source, niche: niche.trim(), city: city.trim() || undefined, state: state.trim() || undefined, maxResults }),
@@ -93,6 +106,9 @@ function DiscoveryPanel() {
                     className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all',
                       source === s.value ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' : 'text-slate-400 border-[#252540] bg-[#1a1a30] hover:text-slate-200 hover:border-[#32325a]')}>
                     <span>{s.icon}</span>{s.label}
+                    {s.badge === 'soon' && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-700 text-slate-400 uppercase tracking-wide">Soon</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -135,9 +151,9 @@ function DiscoveryPanel() {
                 {(runState === 'done' || runState === 'error') && (
                   <Button variant="ghost" size="sm" onClick={reset}><X className="w-3.5 h-3.5" />Clear</Button>
                 )}
-                <Button variant="primary" size="md" onClick={handleRun} disabled={!niche.trim() || runState === 'running'}>
+                <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun}>
                   {runState === 'running' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  {runState === 'running' ? 'Running…' : 'Run Discovery Job'}
+                  {runState === 'running' ? 'Running…' : isComingSoon ? 'Coming Soon' : 'Run Discovery Job'}
                 </Button>
               </div>
             </div>

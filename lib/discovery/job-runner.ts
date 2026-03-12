@@ -84,7 +84,8 @@ export async function runDiscoveryJob(
         break
       }
 
-      case 'maps': {
+      case 'maps':
+      case 'google-places': {
         const result = await runMapsSource(params)
         leads        = result.leads
         costEstimate = result.estimatedCost
@@ -93,6 +94,7 @@ export async function runDiscoveryJob(
       }
 
       // Future connectors slot in here
+      case 'yelp':
       case 'scraperapi':
       case 'manual':
       case 'csv':
