@@ -9,6 +9,7 @@ import {
   Clapperboard,
   Mail,
   BarChart3,
+  Activity,
   Settings,
   Zap,
   ChevronRight,
@@ -18,15 +19,51 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/command-center', icon: LayoutDashboard, label: 'Command Center' },
-  { href: '/prospecting', icon: Search, label: 'Prospecting' },
-  { href: '/companies', icon: Building2, label: 'Companies' },
-  { href: '/demo-studio', icon: Clapperboard, label: 'Demo Studio' },
-  { href: '/outreach', icon: Mail, label: 'Outreach' },
-  { href: '/pipeline', icon: BarChart3, label: 'Pipeline' },
+  { href: '/prospecting',    icon: Search,          label: 'Prospecting' },
+  { href: '/companies',      icon: Building2,       label: 'Companies' },
+  { href: '/demo-studio',    icon: Clapperboard,    label: 'Demo Studio' },
+  { href: '/outreach',       icon: Mail,            label: 'Outreach' },
+  { href: '/pipeline',       icon: BarChart3,       label: 'Pipeline' },
 ]
+
+const systemItems = [
+  { href: '/system-health', icon: Activity, label: 'System Health' },
+]
+
+function NavLink({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+}: {
+  href: string
+  icon: React.ElementType
+  label: string
+  isActive: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+        isActive
+          ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+      )}
+    >
+      <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-indigo-400' : '')} />
+      {label}
+      {isActive && <ChevronRight className="w-3 h-3 ml-auto text-indigo-500" />}
+    </Link>
+  )
+}
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+
+  function isActive(href: string) {
+    return pathname === href || pathname?.startsWith(href + '/')
+  }
 
   return (
     <aside className="w-[220px] min-h-screen bg-[#0b0b18] border-r border-[#1e1e38] flex flex-col">
@@ -52,36 +89,25 @@ export function DashboardSidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 pb-4">
+      {/* Platform nav */}
+      <nav className="flex-1 px-3 pb-2 overflow-y-auto">
         <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2">
           Platform
         </div>
+        <div className="space-y-0.5 mb-4">
+          {navItems.map((item) => (
+            <NavLink key={item.href} {...item} isActive={isActive(item.href)} />
+          ))}
+        </div>
+
+        {/* System section */}
+        <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2 mt-3">
+          System
+        </div>
         <div className="space-y-0.5">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname?.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
-                  isActive
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
-                )}
-              >
-                <item.icon
-                  className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-indigo-400' : '')}
-                />
-                {item.label}
-                {isActive && (
-                  <ChevronRight className="w-3 h-3 ml-auto text-indigo-500" />
-                )}
-              </Link>
-            )
-          })}
+          {systemItems.map((item) => (
+            <NavLink key={item.href} {...item} isActive={isActive(item.href)} />
+          ))}
         </div>
       </nav>
 
