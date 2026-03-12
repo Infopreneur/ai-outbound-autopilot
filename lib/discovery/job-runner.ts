@@ -12,6 +12,7 @@ import type {
   JobStatus,
 } from './types'
 import { runApifyDiscovery } from './apify'
+import { runMapsDiscovery }  from './maps'
 
 // ─── In-memory store (replace with Supabase) ─────────────────────────────────
 
@@ -80,6 +81,14 @@ export async function runDiscoveryJob(
         runId        = result.runId
         job.actorId  = 'compass/google-maps-scraper'
         job.runId    = runId
+        break
+      }
+
+      case 'maps': {
+        const result = await runMapsDiscovery(params)
+        leads        = result.leads
+        costEstimate = result.estimatedCost
+        job.runId    = result.jobId
         break
       }
 

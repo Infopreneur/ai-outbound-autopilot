@@ -21,7 +21,7 @@ import { runDiscoveryJob }           from '@/lib/discovery/job-runner'
 import { logUsage }                  from '@/lib/usage/cost-tracker'
 import type { DiscoveryRunParams, JobSource } from '@/lib/discovery/types'
 
-const VALID_SOURCES: JobSource[] = ['apify', 'scraperapi', 'manual', 'csv']
+const VALID_SOURCES: JobSource[] = ['apify', 'maps', 'scraperapi', 'manual', 'csv']
 
 export async function POST(request: NextRequest) {
   let body: unknown
@@ -62,13 +62,13 @@ export async function POST(request: NextRequest) {
 
     // Log usage for cost tracking
     logUsage({
-      provider:     'apify',
-      service:      'google-maps-scraper',
+      provider:     params.source === 'maps' ? 'google' : 'apify',
+      service:      params.source === 'maps' ? 'maps-places-api' : 'google-maps-scraper',
       feature:      'lead-discovery',
       input_units:  0,
       output_units: leads.length,
       status:       job.status === 'completed' ? 'success' : 'error',
-      metadata:     { jobId: job.id, niche: params.niche },
+      metadata:     { jobId: job.id, niche: params.niche, source: params.source },
     })
 
     return NextResponse.json({ job, leads, count: leads.length }, { status: 200 })

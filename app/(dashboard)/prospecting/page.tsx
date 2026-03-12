@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  Search, Sparkles, Download, RefreshCw, SlidersHorizontal,
+  Search, Download, RefreshCw, SlidersHorizontal, Sparkles,
   Play, ChevronDown, ChevronUp, MapPin, Globe, Phone, Star,
   Loader2, CheckCircle2, AlertCircle, Zap, Database, X,
 } from 'lucide-react'
@@ -17,57 +17,13 @@ const industries  = ['All', 'SaaS', 'FinTech', 'MarTech', 'AI/ML', 'Cloud Infras
 const statuses    = ['All', 'hot', 'warm', 'cold', 'contacted', 'qualified']
 const scoreRanges = ['All', '90+', '75–89', '60–74', 'Below 60']
 
-const SOURCES: { value: JobSource; label: string; icon: string }[] = [
-  { value: 'apify',      label: 'Google Maps (Apify)', icon: '📍' },
-  { value: 'scraperapi', label: 'Yelp (ScraperAPI)',   icon: '⭐' },
-  { value: 'manual',     label: 'Manual Entry',        icon: '✏️' },
+const SOURCES: { value: JobSource; label: string; icon: string; endpoint: string }[] = [
+  { value: 'apify', label: 'Apify Scraper',       icon: '⚡', endpoint: '/api/discovery/run' },
+  { value: 'maps',  label: 'Google Maps (Direct)', icon: '🗺️', endpoint: '/api/discovery/sources/maps' },
 ]
 
 const MAX_OPTIONS = [10, 25, 50, 100, 200]
 
-function DiscoveryLeadCard({ lead }: { lead: NormalizedCompanyLead }) {
-  return (
-    <div className="bg-[#1a1a30] border border-[#252540] rounded-lg p-4 hover:border-[#32325a] hover:bg-[#1e1e38] transition-all">
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-white truncate">{lead.name}</div>
-          {lead.niche && <div className="text-[11px] text-indigo-400 mt-0.5">{lead.niche}</div>}
-        </div>
-        {lead.rating !== undefined && (
-          <div className="flex items-center gap-1 text-xs text-amber-400 flex-shrink-0">
-            <Star className="w-3 h-3 fill-amber-400" />
-            {lead.rating.toFixed(1)}
-            {lead.reviewCount && <span className="text-slate-600">({lead.reviewCount})</span>}
-          </div>
-        )}
-      </div>
-      <div className="space-y-1">
-        {(lead.city || lead.state) && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <MapPin className="w-3 h-3" />
-            {[lead.city, lead.state].filter(Boolean).join(', ')}
-          </div>
-        )}
-        {lead.website && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 truncate">
-            <Globe className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">{lead.website.replace(/^https?:\/\//, '')}</span>
-          </div>
-        )}
-        {lead.phone && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Phone className="w-3 h-3" />
-            {lead.phone}
-          </div>
-        )}
-      </div>
-      <div className="mt-3 flex items-center gap-2">
-        <Button variant="primary" size="sm" className="flex-1 justify-center text-[11px]">Add to Prospecting</Button>
-        <Button variant="ghost" size="sm"><Sparkles className="w-3 h-3 text-indigo-400" /></Button>
-      </div>
-    </div>
-  )
-}
 
 type RunState = 'idle' | 'running' | 'done' | 'error'
 interface RunResult { job: DiscoveryJob; leads: NormalizedCompanyLead[]; count: number }
@@ -89,7 +45,8 @@ function DiscoveryPanel() {
     setRunState('running'); setError(null); setResult(null); setProgress(0)
     const ticker = setInterval(() => setProgress((p) => Math.min(p + Math.random() * 15, 85)), 400)
     try {
-      const res = await fetch('/api/discovery/run', {
+      const activeSource = SOURCES.find((s) => s.value === source) ?? SOURCES[0]
+      const res = await fetch(activeSource.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ source, niche: niche.trim(), city: city.trim() || undefined, state: state.trim() || undefined, maxResults }),
@@ -207,8 +164,9 @@ function DiscoveryPanel() {
           </div>
 
           {runState === 'done' && result && (
-            <div className="border-t border-[#1e1e38] p-5">
-              <div className="flex items-center justify-between mb-4">
+            <div className="border-t border-[#1e1e38]">
+              {/* Results header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e1e38]">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
                     <CheckCircle2 className="w-3.5 h-3.5" />Job completed
@@ -221,15 +179,75 @@ function DiscoveryPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-600">Est. cost: <span className="text-slate-300 font-semibold">${result.job.costEstimate.toFixed(3)}</span></span>
-                  <Button variant="secondary" size="sm"><Download className="w-3.5 h-3.5" />Export All</Button>
+                  <Button variant="secondary" size="sm"><Download className="w-3.5 h-3.5" />Export</Button>
                   <Button variant="primary" size="sm"><Database className="w-3.5 h-3.5" />Save to Pipeline</Button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {result.leads.map((lead) => <DiscoveryLeadCard key={lead.id} lead={lead} />)}
-              </div>
-              {result.leads.length === 0 && (
+
+              {result.leads.length === 0 ? (
                 <div className="text-center py-10 text-slate-600 text-sm">No leads returned. Try a different niche or location.</div>
+              ) : (
+                <table className="w-full">
+                  <thead className="border-b border-[#1e1e38]">
+                    <tr>
+                      {['Business Name', 'Website', 'Phone', 'Rating', 'Reviews', 'City', ''].map((h) => (
+                        <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#0f0f1e]">
+                    {result.leads.map((lead) => (
+                      <tr key={lead.id} className="hover:bg-white/[0.015] transition-colors group">
+                        <td className="px-4 py-3">
+                          <div className="text-sm font-semibold text-white">{lead.name}</div>
+                          {lead.niche && <div className="text-[11px] text-indigo-400 mt-0.5">{lead.niche}</div>}
+                        </td>
+                        <td className="px-4 py-3 max-w-[160px]">
+                          {lead.website ? (
+                            <div className="flex items-center gap-1.5 text-xs text-slate-400 truncate">
+                              <Globe className="w-3 h-3 flex-shrink-0 text-slate-600" />
+                              <span className="truncate">{lead.website.replace(/^https?:\/\//, '')}</span>
+                            </div>
+                          ) : <span className="text-xs text-slate-700">—</span>}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {lead.phone ? (
+                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                              <Phone className="w-3 h-3 text-slate-600" />
+                              {lead.phone}
+                            </div>
+                          ) : <span className="text-xs text-slate-700">—</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          {lead.rating !== undefined ? (
+                            <div className="flex items-center gap-1 text-xs">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              <span className="text-amber-400 font-semibold">{lead.rating.toFixed(1)}</span>
+                            </div>
+                          ) : <span className="text-xs text-slate-700">—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-500 tabular-nums">
+                          {lead.reviewCount !== undefined ? lead.reviewCount.toLocaleString() : '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(lead.city || lead.state) ? (
+                            <div className="flex items-center gap-1 text-xs text-slate-500">
+                              <MapPin className="w-3 h-3 text-slate-600" />
+                              {[lead.city, lead.state].filter(Boolean).join(', ')}
+                            </div>
+                          ) : <span className="text-xs text-slate-700">—</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Button variant="primary" size="sm" className="text-[11px] opacity-0 group-hover:opacity-100 transition-opacity">
+                            Add
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           )}

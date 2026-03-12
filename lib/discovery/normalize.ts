@@ -12,6 +12,7 @@ import type {
   NormalizedCompanyLead,
   JobSource,
 } from './types'
+import { normalizeMapsResults } from './maps-normalize'
 
 // ─── Source-specific field shapes ─────────────────────────────────────────────
 
@@ -126,6 +127,9 @@ export function normalizeResults(
     switch (source) {
       case 'apify':
         return rawData.map((r) => normalizeApify(r, jobId))
+
+      case 'maps':
+        return normalizeMapsResults(scrapeResult)
 
       case 'scraperapi':
       case 'manual':

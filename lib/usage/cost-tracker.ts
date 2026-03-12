@@ -9,6 +9,7 @@
  */
 
 import type { ApiUsageLog, UsageStatus } from '@/lib/discovery/types'
+import { supabaseAdmin } from '@/lib/supabase/server'
 
 // ─── Cost rate table (USD per unit) ──────────────────────────────────────────
 // Input / output rates keyed as `${provider}.${service}-input/output`.
@@ -86,9 +87,53 @@ export function logUsage(params: LogUsageParams): ApiUsageLog {
 
   pushLog(entry)
 
-  // TODO: supabase.from('api_usage_logs').insert(entry)
+  // Fire-and-forget Supabase persist
+  supabaseAdmin.from('api_usage_logs').insert({
+    id:             entry.id,
+    provider:       entry.provider,
+    service:        entry.service,
+    feature:        entry.feature,
+    input_units:    entry.input_units,
+    output_units:   entry.output_units,
+    estimated_cost: entry.estimated_cost,
+    status:         entry.status,
+    created_at:     entry.created_at,
+    metadata:       entry.metadata ?? null,
+  }).then(({ error }) => {
+    if (error) console.error('[cost-tracker] Supabase insert failed:', error.message)
+  })
 
   return entry
+}
+
+// ─── Async helper (explicit callers) ─────────────────────────────────────────
+
+export async function logApiUsage({
+  provider,
+  service,
+  model,
+  feature,
+  inputUnits,
+  outputUnits,
+  cost,
+}: {
+  provider: string
+  service: string
+  model?: string
+  feature: string
+  inputUnits?: number
+  outputUnits?: number
+  cost?: number
+}) {
+  await supabaseAdmin.from('api_usage_logs').insert({
+    provider,
+    service,
+    model:          model ?? null,
+    feature,
+    input_units:    inputUnits  ?? 0,
+    output_units:   outputUnits ?? 0,
+    estimated_cost: cost        ?? 0,
+  })
 }
 
 // ─── Query helpers ────────────────────────────────────────────────────────────

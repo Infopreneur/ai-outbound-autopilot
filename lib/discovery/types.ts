@@ -1,7 +1,7 @@
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
 export type JobStatus  = 'pending' | 'running' | 'completed' | 'failed'
-export type JobSource  = 'apify' | 'scraperapi' | 'manual' | 'csv'
+export type JobSource  = 'apify' | 'scraperapi' | 'manual' | 'csv' | 'maps'
 export type UsageStatus = 'success' | 'error' | 'timeout'
 
 // ─── Discovery Job ────────────────────────────────────────────────────────────
