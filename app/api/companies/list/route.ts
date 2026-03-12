@@ -6,11 +6,11 @@ export async function GET() {
     .from('companies')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(100)
+    .limit(500)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ companies: data })
+  return NextResponse.json(data)
 }

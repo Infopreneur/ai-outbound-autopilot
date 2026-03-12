@@ -219,7 +219,7 @@ export default function ProspectingPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const loadCompanies = useCallback(() => {
-    fetch('/api/companies')
+    fetch('/api/companies/list')
       .then((r) => r.json())
       .then((data) => { setCompanies(Array.isArray(data) ? data : []); setLoading(false) })
       .catch(() => setLoading(false))
