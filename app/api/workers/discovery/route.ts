@@ -61,6 +61,7 @@ export async function GET() {
             review_count: l.reviewCount  ?? null,
             phone:        l.phone        ?? null,
             website:      l.website      ?? null,
+            niche:        job.keyword,
           })),
           { onConflict: 'place_id', ignoreDuplicates: true },
         )
