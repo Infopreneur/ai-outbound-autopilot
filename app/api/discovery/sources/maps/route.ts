@@ -1,124 +1,96 @@
 /**
  * POST /api/discovery/sources/maps
  *
- * Google Maps-specific discovery endpoint.
- * Runs mock (or real) Maps Places API search, normalizes results,
- * and persists raw + normalized records to Supabase.
+ * Google Maps discovery endpoint.
+ * Delegates to runMapsSearch which generates results and persists
+ * them to the companies table in Supabase.
  *
  * Request body:
  * {
  *   niche:       "Roofing Contractors"
- *   city?:       "Phoenix"
+ *   city:        "Phoenix"
  *   state?:      "AZ"
  *   maxResults?: 50
  * }
  */
 
-import { NextRequest, NextResponse }         from 'next/server'
-import { runMapsDiscovery }                  from '@/lib/discovery/maps'
-import { logUsage }                          from '@/lib/usage/cost-tracker'
-import { supabaseAdmin }                     from '@/lib/supabase/server'
-import type { DiscoveryRunParams }           from '@/lib/discovery/types'
+import { NextResponse }       from 'next/server'
+import { runMapsSearch }      from '@/lib/maps/maps-search'
+import { logUsage }           from '@/lib/usage/cost-tracker'
 
-export async function POST(request: NextRequest) {
-  let body: unknown
+export async function POST(req: Request) {
+  let body: Record<string, unknown>
   try {
-    body = await request.json()
+    body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const b = body as Record<string, unknown>
+  const { niche, city, state, maxResults } = body
 
-  if (!b.niche || typeof b.niche !== 'string' || b.niche.trim() === '') {
+  if (!niche || typeof niche !== 'string' || niche.trim() === '') {
     return NextResponse.json({ error: '"niche" is required.' }, { status: 422 })
   }
-
-  const params: DiscoveryRunParams = {
-    source:     'maps',
-    niche:      b.niche.trim(),
-    city:       typeof b.city  === 'string' ? b.city.trim()  : undefined,
-    state:      typeof b.state === 'string' ? b.state.trim() : undefined,
-    maxResults: Math.min(Number(b.maxResults ?? 50), 200),
+  if (!city || typeof city !== 'string') {
+    return NextResponse.json({ error: '"city" is required.' }, { status: 422 })
   }
 
+  const max = Math.min(Number(maxResults ?? 50), 200)
+
   try {
-    const { leads, jobId, rawCount, estimatedCost } = await runMapsDiscovery(params)
+    const results = await runMapsSearch({
+      niche:      niche.trim(),
+      city:       city.trim(),
+      state:      typeof state === 'string' ? state.trim() : undefined,
+      maxResults: max,
+    })
 
-    // ── Persist raw scrape results ──────────────────────────────────────────
-    if (leads.length > 0) {
-      await supabaseAdmin
-        .from('scrape_results_raw')
-        .insert(
-          leads.map((lead) => ({
-            discovery_job_id: jobId,
-            source:           'maps',
-            external_id:      lead.sourceUrl ?? lead.id,
-            raw_payload:      lead,
-          })),
-        )
-        .then(({ error }) => {
-          if (error) console.error('[maps/route] scrape_results_raw insert:', error.message)
-        })
-
-      // ── Persist normalized companies ──────────────────────────────────────
-      await supabaseAdmin
-        .from('companies')
-        .insert(
-          leads.map((lead) => ({
-            name:           lead.name,
-            website:        lead.website        ?? null,
-            phone:          lead.phone          ?? null,
-            city:           lead.city           ?? null,
-            state:          lead.state          ?? null,
-            zip:            lead.zip            ?? null,
-            industry:       lead.industry       ?? null,
-            rating:         lead.rating         ?? null,
-            review_count:   lead.reviewCount    ?? null,
-            address:        lead.address        ?? null,
-            source:         'maps',
-            source_job_id:  jobId,
-          })),
-        )
-        .then(({ error }) => {
-          if (error) console.error('[maps/route] companies insert:', error.message)
-        })
-    }
-
-    // ── Log usage ─────────────────────────────────────────────────────────
     logUsage({
       provider:     'google',
       service:      'maps-places-api',
       feature:      'lead-discovery',
       input_units:  0,
-      output_units: leads.length,
+      output_units: results.length,
       status:       'success',
-      metadata:     { jobId, rawCount, niche: params.niche, city: params.city, state: params.state },
+      metadata:     { niche, city, state },
     })
 
-    // Return same shape as /api/discovery/run for UI compatibility
+    // Return shape compatible with the prospecting page UI
     return NextResponse.json({
       job: {
-        id:              jobId,
+        id:              `maps_${Date.now()}`,
         source:          'maps',
         status:          'completed',
-        niche:           params.niche,
-        city:            params.city,
-        state:           params.state,
-        maxResults:      params.maxResults,
-        resultsFound:    leads.length,
-        leadsNormalized: leads.length,
-        costEstimate:    estimatedCost,
+        niche:           niche.trim(),
+        city:            city.trim(),
+        state:           state ?? null,
+        maxResults:      max,
+        resultsFound:    results.length,
+        leadsNormalized: results.length,
+        costEstimate:    parseFloat((Math.ceil(results.length / 20) * 0.017).toFixed(4)),
         startedAt:       new Date().toISOString(),
         completedAt:     new Date().toISOString(),
       },
-      leads,
-      count: leads.length,
+      leads:  results.map((r, i) => ({
+        id:          `lead_${Date.now()}_${i}`,
+        name:        r.name,
+        website:     r.website,
+        phone:       r.phone,
+        rating:      r.rating,
+        reviewCount: r.review_count,
+        city:        r.city,
+        state:       r.state,
+        rawSource:   'maps',
+        normalizedAt: new Date().toISOString(),
+        enriched:    false,
+        sourceJob:   `maps_${Date.now()}`,
+      })),
+      count: results.length,
     })
   } catch (err) {
     console.error('[POST /api/discovery/sources/maps]', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Maps discovery failed.' },
+      { error: err instanceof Error ? err.message : 'Maps search failed.' },
       { status: 500 },
     )
   }

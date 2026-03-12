@@ -87,9 +87,8 @@ export function logUsage(params: LogUsageParams): ApiUsageLog {
 
   pushLog(entry)
 
-  // Fire-and-forget Supabase persist
+  // Fire-and-forget Supabase persist (omit id — let the DB generate a UUID)
   supabaseAdmin.from('api_usage_logs').insert({
-    id:             entry.id,
     provider:       entry.provider,
     service:        entry.service,
     feature:        entry.feature,
