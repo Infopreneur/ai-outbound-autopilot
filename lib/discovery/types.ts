@@ -111,6 +111,8 @@ export interface DiscoveryRunParams {
   city?: string
   state?: string
   maxResults?: number
+  /** Optional industry preset key from INDUSTRY_PRESETS (drives multi-keyword search) */
+  industry?: string
 }
 
 export interface DiscoveryRunResult {
