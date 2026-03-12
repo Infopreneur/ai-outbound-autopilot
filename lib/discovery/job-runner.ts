@@ -11,8 +11,8 @@ import type {
   DiscoveryRunResult,
   JobStatus,
 } from './types'
-import { runApifyDiscovery } from './apify'
-import { runMapsDiscovery }  from './maps'
+import { runApifySource } from './sources/apify'
+import { runMapsSource }  from './sources/maps'
 
 // ─── In-memory store (replace with Supabase) ─────────────────────────────────
 
@@ -75,7 +75,7 @@ export async function runDiscoveryJob(
 
     switch (params.source) {
       case 'apify': {
-        const result = await runApifyDiscovery(params)
+        const result = await runApifySource(params)
         leads        = result.leads
         costEstimate = result.estimatedCost
         runId        = result.runId
@@ -85,7 +85,7 @@ export async function runDiscoveryJob(
       }
 
       case 'maps': {
-        const result = await runMapsDiscovery(params)
+        const result = await runMapsSource(params)
         leads        = result.leads
         costEstimate = result.estimatedCost
         job.runId    = result.jobId
