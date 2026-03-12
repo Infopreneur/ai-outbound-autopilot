@@ -14,7 +14,7 @@
  *   industry?:   "roofing"   ← drives multi-keyword for google-places
  * }
  */
-
+console.log("DISCOVERY ROOT ROUTE HIT")
 import { NextResponse }                      from 'next/server'
 import { runGooglePlacesDiscovery }           from '@/lib/discovery/google-places'
 import { runApifySource }                     from '@/lib/discovery/sources/apify'
