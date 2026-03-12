@@ -406,6 +406,101 @@ export default function SystemHealthPage() {
         />
       </div>
 
+      {/* Cost Efficiency Funnel */}
+      <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h3 className="text-sm font-semibold text-white">Estimated Cost Per Lead — Funnel View</h3>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              Track unit economics at each stage to stay profitable as you scale
+            </p>
+          </div>
+          <span className="text-[10px] text-slate-600 bg-[#1a1a30] border border-[#252540] px-2 py-1 rounded-md font-mono">
+            Live estimates
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          {/* Cost per Lead */}
+          <div className="bg-[#0d0d1c] border border-[#1e1e38] rounded-lg p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-indigo-400" />
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Stage 1</span>
+              </div>
+              <div className="text-2xl font-bold text-white tabular-nums mb-1">
+                {formatUSD(m.avgCostPerLead)}
+              </div>
+              <div className="text-xs font-semibold text-indigo-300 mb-2">Cost per Lead</div>
+              <div className="text-[11px] text-slate-600 leading-relaxed">
+                Total scraping + enrichment cost divided by all leads discovered. Optimize by improving actor efficiency and batching AI calls.
+              </div>
+              <div className="mt-3 pt-3 border-t border-[#1e1e38] flex items-center justify-between">
+                <span className="text-[10px] text-slate-600">Conversion to next stage</span>
+                <span className="text-[10px] font-bold text-indigo-400">28%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cost per Qualified Lead */}
+          <div className="bg-[#0d0d1c] border border-[#1e1e38] rounded-lg p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Stage 2</span>
+              </div>
+              <div className="text-2xl font-bold text-white tabular-nums mb-1">
+                {formatUSD(m.avgCostPerQualifiedLead)}
+              </div>
+              <div className="text-xs font-semibold text-amber-300 mb-2">Cost per Qualified Lead</div>
+              <div className="text-[11px] text-slate-600 leading-relaxed">
+                Accounts for leads that pass AI scoring (warm/hot tier). Reduce by tightening niche targeting and ICP filters before scraping.
+              </div>
+              <div className="mt-3 pt-3 border-t border-[#1e1e38] flex items-center justify-between">
+                <span className="text-[10px] text-slate-600">Conversion to next stage</span>
+                <span className="text-[10px] font-bold text-amber-400">12%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cost per Meeting Booked */}
+          <div className="bg-[#0d0d1c] border border-[#1e1e38] rounded-lg p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Stage 3</span>
+              </div>
+              <div className="text-2xl font-bold text-white tabular-nums mb-1">
+                {formatUSD(m.avgCostPerMeetingBooked)}
+              </div>
+              <div className="text-xs font-semibold text-emerald-300 mb-2">Cost per Meeting Booked</div>
+              <div className="text-[11px] text-slate-600 leading-relaxed">
+                The true north-star unit metric. Reduce by improving message personalization, reply rate, and follow-up sequence conversion.
+              </div>
+              <div className="mt-3 pt-3 border-t border-[#1e1e38] flex items-center justify-between">
+                <span className="text-[10px] text-slate-600">Target benchmark</span>
+                <span className="text-[10px] font-bold text-emerald-400">{'< $0.50'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Funnel connector bar */}
+        <div className="mt-4 flex items-center gap-1">
+          <div className="flex-1 h-1.5 rounded-full bg-indigo-500/40" />
+          <div className="flex-1 h-1.5 rounded-full bg-amber-500/30" />
+          <div className="flex-1 h-1.5 rounded-full bg-emerald-500/20" />
+        </div>
+        <div className="flex justify-between mt-1.5 px-0.5">
+          <span className="text-[10px] text-slate-700">Discovery</span>
+          <span className="text-[10px] text-slate-700">Qualification</span>
+          <span className="text-[10px] text-slate-700">Booking</span>
+        </div>
+      </div>
+
       {/* Cost breakdown mini-chart */}
       <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
         <h3 className="text-sm font-semibold text-white mb-4">Provider Cost Breakdown — Today</h3>

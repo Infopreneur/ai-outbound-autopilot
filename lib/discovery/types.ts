@@ -97,6 +97,8 @@ export interface SystemHealthMetrics {
   queueDepth: number
   failedJobs: number
   avgCostPerLead: number
+  avgCostPerQualifiedLead: number
+  avgCostPerMeetingBooked: number
   recentApiActivity: ApiUsageLog[]
   recentScraperJobs: DiscoveryJob[]
 }

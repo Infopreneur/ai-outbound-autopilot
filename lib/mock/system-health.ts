@@ -246,6 +246,13 @@ export const mockSystemHealthMetrics: SystemHealthMetrics = {
   avgCostPerLead:     totalLeadsFromLogs > 0
     ? parseFloat((totalCostFromJobs / totalLeadsFromLogs).toFixed(4))
     : 0.0028,
+  // ~28% of leads qualify (warm/hot tier); ~12% of qualified book a meeting
+  avgCostPerQualifiedLead: totalLeadsFromLogs > 0
+    ? parseFloat(((totalCostFromJobs / totalLeadsFromLogs) / 0.28).toFixed(4))
+    : 0.01,
+  avgCostPerMeetingBooked: totalLeadsFromLogs > 0
+    ? parseFloat(((totalCostFromJobs / totalLeadsFromLogs) / 0.28 / 0.12).toFixed(4))
+    : 0.083,
   recentApiActivity:  mockApiUsageLogs,
   recentScraperJobs:  mockDiscoveryJobs,
 }
