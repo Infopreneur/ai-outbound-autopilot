@@ -65,7 +65,9 @@ export async function POST(req: Request) {
 
         // ── Upsert companies (conflict on place_id) ──────────────────────
         if (result.leads.length > 0) {
-          const { error: companyErr } = await supabaseAdmin
+          console.log(`[discovery/route] upserting ${result.leads.length} companies to Supabase…`)
+
+          const { data: companyData, error: companyErr } = await supabaseAdmin
             .from('companies')
             .upsert(
               result.leads.map((l) => ({
@@ -82,11 +84,17 @@ export async function POST(req: Request) {
               { onConflict: 'place_id', ignoreDuplicates: true },
             )
 
-          if (companyErr) console.error('[discovery/route] companies upsert:', companyErr.message)
+          if (companyErr) {
+            console.error('[discovery/route] companies upsert ERROR:', companyErr.message, companyErr)
+          } else {
+            console.log('[discovery/route] companies upsert OK:', companyData)
+          }
         }
 
         // ── Insert discovery_jobs row ─────────────────────────────────────
-        const { error: jobErr } = await supabaseAdmin
+        console.log(`[discovery/route] inserting discovery_jobs row — niche="${params.niche}" city="${params.city}"`)
+
+        const { data: jobData, error: jobErr } = await supabaseAdmin
           .from('discovery_jobs')
           .insert({
             source:        'google-native',
@@ -96,8 +104,13 @@ export async function POST(req: Request) {
             status:        'completed',
             results_count: result.leads.length,
           })
+          .select()
 
-        if (jobErr) console.error('[discovery/route] discovery_jobs insert:', jobErr.message)
+        if (jobErr) {
+          console.error('[discovery/route] discovery_jobs insert ERROR:', jobErr.message, jobErr)
+        } else {
+          console.log('[discovery/route] discovery_jobs insert OK:', jobData)
+        }
 
         // ── Log usage ─────────────────────────────────────────────────────
         logUsage({
