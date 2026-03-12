@@ -17,7 +17,7 @@
  *   niche:       "Roofing Contractors"
  * }
  */
-
+console.log("MAPS DISCOVERY ROUTE HIT")
 import { NextResponse }             from 'next/server'
 import { runMapsSource }            from '@/lib/discovery/sources/maps'
 import { INDUSTRY_PRESETS }         from '@/lib/discovery/industries'
