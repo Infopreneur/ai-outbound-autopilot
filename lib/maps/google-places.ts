@@ -16,6 +16,11 @@ export interface GooglePlace {
   types?: string[]
 }
 
+/**
+ * Fetches Google Places Text Search results with automatic pagination.
+ * Google returns up to 20 results per page, max 3 pages (60 total).
+ * A 2-second delay is required between paginated requests per Google's spec.
+ */
 export async function searchGooglePlaces({
   niche,
   city,
@@ -28,19 +33,33 @@ export async function searchGooglePlaces({
   const apiKey = process.env.GOOGLE_MAPS_API_KEY
   if (!apiKey) throw new Error('GOOGLE_MAPS_API_KEY is not set.')
 
-  const query = `${niche} in ${city}`
-  const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`
+  const query   = `${niche} in ${city}`
+  const results: GooglePlace[] = []
+  let pageToken: string | undefined
 
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(`Google Places request failed: ${res.status} ${res.statusText}`)
-  }
+  do {
+    const url = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json')
+    url.searchParams.set('query', query)
+    url.searchParams.set('key', apiKey)
+    if (pageToken) {
+      url.searchParams.set('pagetoken', pageToken)
+      // Google requires a short delay before the page token becomes valid
+      await new Promise((r) => setTimeout(r, 2000))
+    }
 
-  const data = await res.json()
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error(`Google Places request failed: ${res.status} ${res.statusText}`)
 
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-    throw new Error(`Google Places API error: ${data.status} — ${data.error_message ?? ''}`)
-  }
+    const data = await res.json()
 
-  return (data.results as GooglePlace[]).slice(0, maxResults)
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places API error: ${data.status} — ${data.error_message ?? ''}`)
+    }
+
+    if (Array.isArray(data.results)) results.push(...data.results)
+    pageToken = data.next_page_token
+
+  } while (pageToken && results.length < maxResults)
+
+  return results.slice(0, maxResults)
 }
