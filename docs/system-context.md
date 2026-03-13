@@ -231,7 +231,7 @@ ALTER TABLE companies
 | `/demo-studio` | AI demo context + message generation |
 | `/outreach` | Campaign management |
 | `/pipeline` | Sales pipeline |
-| `/system-health` | API usage + cost tracking |
+| `/system-health` | API usage, cost tracking, and outbound send metrics (email/SMS) |
 
 **Pages still using mock data:** `/companies/[id]`, `/pipeline`, `/demo-studio`
 

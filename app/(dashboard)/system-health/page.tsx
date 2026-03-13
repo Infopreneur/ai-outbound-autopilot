@@ -16,6 +16,7 @@ import {
   Database,
   Bot,
   Zap,
+  Mail,
 } from 'lucide-react'
 import { Badge }   from '@/components/ui/badge'
 import { Button }  from '@/components/ui/button'
@@ -343,7 +344,7 @@ export default function SystemHealthPage() {
       </div>
 
       {/* KPI Row 1 — Spend & AI */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         <MetricCard
           label="API Spend Today"
           value={`$${m.apiSpendToday.toFixed(4)}`}
@@ -367,6 +368,18 @@ export default function SystemHealthPage() {
           icon={<Bot className="w-4 h-4" />}
           iconClass="bg-blue-500/15 text-blue-400"
           trend="up"
+        />
+        <MetricCard
+          label="Emails Sent Today"
+          value={m.totalEmailSentToday.toString()}
+          icon={<Mail className="w-4 h-4" />}
+          iconClass="bg-blue-500/15 text-blue-400"
+        />
+        <MetricCard
+          label="SMS Sent Today"
+          value={m.totalSmsSentToday.toString()}
+          icon={<Mail className="w-4 h-4" />}
+          iconClass="bg-indigo-500/15 text-indigo-400"
         />
         <MetricCard
           label="Avg Cost / Lead"

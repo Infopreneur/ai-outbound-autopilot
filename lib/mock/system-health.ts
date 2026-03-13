@@ -240,6 +240,8 @@ export const mockSystemHealthMetrics: SystemHealthMetrics = {
   apiSpendToday:      parseFloat(mockApiUsageLogs.slice(0, 6).reduce((s, l) => s + l.estimated_cost, 0).toFixed(4)),
   apiSpendMonth:      14.87,
   totalAiCallsToday:  mockApiUsageLogs.filter((l) => l.provider === 'anthropic').length,
+  totalEmailSentToday: 250, // mock value
+  totalSmsSentToday: 50,   // mock value
   scraperJobsRunning: mockDiscoveryJobs.filter((j) => j.status === 'running').length,
   queueDepth:         mockDiscoveryJobs.filter((j) => j.status === 'pending').length,
   failedJobs:         mockDiscoveryJobs.filter((j) => j.status === 'failed').length,

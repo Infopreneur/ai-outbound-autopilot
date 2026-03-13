@@ -95,6 +95,8 @@ export interface SystemHealthMetrics {
   apiSpendToday: number
   apiSpendMonth: number
   totalAiCallsToday: number
+  totalEmailSentToday: number
+  totalSmsSentToday: number
   scraperJobsRunning: number
   queueDepth: number
   failedJobs: number

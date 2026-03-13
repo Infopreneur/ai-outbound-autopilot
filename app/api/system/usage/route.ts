@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse }                      from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase/server'
 import { getLogsToday, getLogsThisMonth, getRecentLogs,
          getSpendToday, getSpendThisMonth, getAiCallsToday } from '@/lib/usage/cost-tracker'
 import { getJobsByStatus }                                from '@/lib/discovery/job-runner'
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   const useMock = liveLogsToday.length === 0
 
   if (useMock) {
-    // No live data yet — return mock metrics
+    // No live data yet — return mock metrics (already includes email/sms counts)
     return NextResponse.json({
       source: 'mock',
       ...mockSystemHealthMetrics,
@@ -48,11 +49,25 @@ export async function GET(request: NextRequest) {
   const totalJobsCost  = completedJobs.reduce((s, j) => s + j.costEstimate, 0)
   const avgCostPerLead = totalLeads > 0 ? totalJobsCost / totalLeads : 0
 
+  // email / sms counts
+  const { count: emailCount } = await supabaseAdmin
+    .from('outreach_messages')
+    .select('id', { head: true, count: 'exact' })
+    .eq('status', 'sent')
+    .eq('channel', 'email')
+  const { count: smsCount } = await supabaseAdmin
+    .from('outreach_messages')
+    .select('id', { head: true, count: 'exact' })
+    .eq('status', 'sent')
+    .eq('channel', 'sms')
+
   return NextResponse.json({
     source:            'live',
     apiSpendToday:     parseFloat(getSpendToday().toFixed(4)),
     apiSpendMonth:     parseFloat(getSpendThisMonth().toFixed(4)),
     totalAiCallsToday: getAiCallsToday(),
+    totalEmailSentToday: emailCount ?? 0,
+    totalSmsSentToday: smsCount ?? 0,
     scraperJobsRunning: running,
     queueDepth:        pending,
     failedJobs:        failed,
