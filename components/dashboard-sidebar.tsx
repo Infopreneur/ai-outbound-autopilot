@@ -14,16 +14,18 @@ import {
   Zap,
   ChevronRight,
   Sparkles,
+  FileBarChart2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/command-center', icon: LayoutDashboard, label: 'Command Center' },
-  { href: '/prospecting',    icon: Search,          label: 'Prospecting' },
-  { href: '/companies',      icon: Building2,       label: 'Companies' },
-  { href: '/demo-studio',    icon: Clapperboard,    label: 'Demo Studio' },
-  { href: '/outreach',       icon: Mail,            label: 'Outreach' },
-  { href: '/pipeline',       icon: BarChart3,       label: 'Pipeline' },
+  { href: '/command-center',    icon: LayoutDashboard, label: 'Command Center' },
+  { href: '/prospecting',       icon: Search,          label: 'Prospecting' },
+  { href: '/companies',         icon: Building2,       label: 'Companies' },
+  { href: '/outreach',          icon: Mail,            label: 'Outreach' },
+  { href: '/reputation-report', icon: FileBarChart2,   label: 'Positioning Report' },
+  { href: '/pipeline',          icon: BarChart3,       label: 'Pipeline' },
+  { href: '/demo-studio',       icon: Clapperboard,    label: 'Demo Studio' },
 ]
 
 const systemItems = [

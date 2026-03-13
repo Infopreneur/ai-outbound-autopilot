@@ -69,6 +69,8 @@ function buildScoredRows(leads: NormalizedCompanyLead[], niche: string, source: 
         total:            s.totalScore,
         reason:           s.reason,
       },
+      top_offer:              s.topOffer,
+      offer_fit_breakdown:    s.offerRecommendations,
       last_scored_at:         now,
       last_discovered_at:     now,
     }

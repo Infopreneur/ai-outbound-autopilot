@@ -98,6 +98,71 @@ EXPECTED JSON SCHEMA:
 }`
 }
 
+// ─── Offer-Specific Outreach Prompts ─────────────────────────────────────────
+
+export type MessageAngle = 'pain' | 'opportunity' | 'social-proof'
+export type OfferId = 'followup-automation' | 'database-reactivation' | 'positioning-report'
+
+const OFFER_DESCRIPTIONS: Record<OfferId, string> = {
+  'followup-automation':    '24/7 Automated Follow-Up — never miss a call or lead, automatically follow up with every inquiry, close 20–30% more deals.',
+  'database-reactivation':  'Database Reactivation System — extract the revenue hidden in their existing customer database. Reactivate past customers who already know, like, and trust them.',
+  'positioning-report':     'Custom Online Positioning Report — a personalised audit showing exactly how they appear online vs competitors, what they are losing, and what to fix first.',
+}
+
+const ANGLE_INSTRUCTIONS: Record<MessageAngle, string> = {
+  'pain':         'Lead with a specific pain point you can infer from their data (missed calls, low rating, few reviews, no website). Make them feel seen.',
+  'opportunity':  'Lead with a quantified opportunity — estimated revenue they are leaving on the table, or a competitor advantage they could gain. Be specific with numbers.',
+  'social-proof': 'Lead with a result you helped a similar business achieve. Reference the niche and the outcome. Make it concrete and credible.',
+}
+
+export function buildOfferMessagePrompt(
+  company: CompanyRecord,
+  offerId: OfferId,
+  angle: MessageAngle,
+  channel: 'email' | 'sms' | 'linkedin',
+): string {
+  const offerDesc   = OFFER_DESCRIPTIONS[offerId]
+  const angleGuide  = ANGLE_INSTRUCTIONS[angle]
+
+  const channelGuide =
+    channel === 'sms'
+      ? 'SMS — 160 characters max, conversational, no subject line, one clear ask.'
+      : channel === 'linkedin'
+      ? 'LinkedIn DM — brief, no pitch until rapport, personal and curious tone.'
+      : 'Email — subject line + 4-6 sentence body, professional but conversational.'
+
+  return `You are a world-class B2B copywriter who writes short, natural outreach messages that convert.
+
+COMPANY DATA:
+${companyBlock(company)}
+
+OFFER TO SELL:
+${offerDesc}
+
+MESSAGE ANGLE: ${angle.toUpperCase()}
+${angleGuide}
+
+CHANNEL: ${channel.toUpperCase()}
+${channelGuide}
+
+RULES:
+- Never be generic. Reference something specific about THIS company (their name, niche, city, rating, review count, or missing website).
+- Do NOT pitch features. Focus on ONE outcome or pain.
+- End with a single low-friction CTA — a question, not a demand.
+- Use [First Name] as a placeholder for the owner's name where natural.
+- Return ONLY valid JSON. No markdown. No explanation.
+
+EXPECTED JSON SCHEMA:
+{
+  "subjectLine": "string (email only; omit for sms/linkedin — use empty string)",
+  "messageBody": "string — the full message text",
+  "cta": "string — the closing sentence / call-to-action only",
+  "channel": "${channel}",
+  "angle": "${angle}",
+  "offerId": "${offerId}"
+}`
+}
+
 // ─── Outreach Message Prompt ──────────────────────────────────────────────────
 
 export function buildMessagePrompt(
