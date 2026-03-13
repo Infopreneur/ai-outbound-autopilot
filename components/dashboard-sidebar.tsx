@@ -12,17 +12,32 @@ import {
   Activity,
   Settings,
   Zap,
-  ChevronRight,
   Sparkles,
   FileBarChart2,
+  PenLine,
+  List,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+// ── Nav structure ─────────────────────────────────────────────────────────────
+type NavItem = {
+  href: string
+  icon: React.ElementType
+  label: string
+  children?: { href: string; icon: React.ElementType; label: string }[]
+}
+
+const navItems: NavItem[] = [
   { href: '/command-center',    icon: LayoutDashboard, label: 'Command Center' },
   { href: '/prospecting',       icon: Search,          label: 'Prospecting' },
   { href: '/companies',         icon: Building2,       label: 'Companies' },
-  { href: '/outreach',          icon: Mail,            label: 'Outreach' },
+  {
+    href: '/outreach', icon: Mail, label: 'Outreach',
+    children: [
+      { href: '/outreach',         icon: List,    label: 'Campaigns' },
+      { href: '/outreach/compose', icon: PenLine, label: 'Compose' },
+    ],
+  },
   { href: '/reputation-report', icon: FileBarChart2,   label: 'Positioning Report' },
   { href: '/pipeline',          icon: BarChart3,       label: 'Pipeline' },
   { href: '/demo-studio',       icon: Clapperboard,    label: 'Demo Studio' },
@@ -32,38 +47,43 @@ const systemItems = [
   { href: '/system-health', icon: Activity, label: 'System Health' },
 ]
 
+// ── Components ────────────────────────────────────────────────────────────────
 function NavLink({
   href,
   icon: Icon,
   label,
   isActive,
+  indent = false,
 }: {
   href: string
   icon: React.ElementType
   label: string
   isActive: boolean
+  indent?: boolean
 }) {
   return (
     <Link
       href={href}
       className={cn(
-        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+        'flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150',
+        indent ? 'px-3 py-2 ml-5' : 'px-3 py-2.5',
         isActive
           ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
           : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
       )}
     >
-      <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-indigo-400' : '')} />
+      <Icon className={cn('flex-shrink-0', indent ? 'w-3.5 h-3.5' : 'w-4 h-4', isActive ? 'text-indigo-400' : '')} />
       {label}
-      {isActive && <ChevronRight className="w-3 h-3 ml-auto text-indigo-500" />}
     </Link>
   )
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
 export function DashboardSidebar() {
   const pathname = usePathname()
 
-  function isActive(href: string) {
+  function isActive(href: string, exact = false) {
+    if (exact) return pathname === href
     return pathname === href || pathname?.startsWith(href + '/')
   }
 
@@ -91,24 +111,59 @@ export function DashboardSidebar() {
         </div>
       </div>
 
-      {/* Platform nav */}
+      {/* Nav */}
       <nav className="flex-1 px-3 pb-2 overflow-y-auto">
         <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2">
           Platform
         </div>
         <div className="space-y-0.5 mb-4">
-          {navItems.map((item) => (
-            <NavLink key={item.href} {...item} isActive={isActive(item.href)} />
-          ))}
+          {navItems.map((item) => {
+            const parentActive = isActive(item.href)
+            const hasChildren  = item.children && item.children.length > 0
+
+            return (
+              <div key={item.href}>
+                {/* Parent link — if it has children, just highlight when in that section */}
+                <Link
+                  href={item.children ? item.children[0].href : item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                    parentActive
+                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+                  )}
+                >
+                  <item.icon className={cn('w-4 h-4 flex-shrink-0', parentActive ? 'text-indigo-400' : '')} />
+                  {item.label}
+                </Link>
+
+                {/* Children — show when parent section is active */}
+                {hasChildren && parentActive && (
+                  <div className="mt-0.5 space-y-0.5">
+                    {item.children!.map((child) => (
+                      <NavLink
+                        key={child.href}
+                        href={child.href}
+                        icon={child.icon}
+                        label={child.label}
+                        isActive={pathname === child.href}
+                        indent
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
 
-        {/* System section */}
+        {/* System */}
         <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2 mt-3">
           System
         </div>
         <div className="space-y-0.5">
           {systemItems.map((item) => (
-            <NavLink key={item.href} {...item} isActive={isActive(item.href)} />
+            <NavLink key={item.href} href={item.href} icon={item.icon} label={item.label} isActive={isActive(item.href)} />
           ))}
         </div>
       </nav>
