@@ -279,7 +279,7 @@ export default function SystemSettingsPage() {
     setAccountError(null)
     setAccountMessage(null)
 
-    Promise.all([
+    Promise.allSettled([
       fetch('/api/account/context', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -307,29 +307,63 @@ export default function SystemSettingsPage() {
         return data as AccountSettingsPayload
       }),
     ])
-      .then(([data, settings]) => {
-        setUserAccount((prev) => ({
-          ...prev,
-          name: data.user.name,
-          email: data.user.email,
-          password: '',
-          confirmPassword: '',
-        }))
-        setWorkspace({
-          name: data.account.name,
-          slug: data.account.slug,
-          role: data.account.role,
-        })
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('userAccount', JSON.stringify({
+      .then(([accountResult, settingsResult]) => {
+        if (accountResult.status === 'fulfilled') {
+          const data = accountResult.value
+          setUserAccount((prev) => ({
+            ...prev,
             name: data.user.name,
             email: data.user.email,
             password: '',
             confirmPassword: '',
           }))
+          setWorkspace({
+            name: data.account.name,
+            slug: data.account.slug,
+            role: data.account.role,
+          })
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('userAccount', JSON.stringify({
+              name: data.user.name,
+              email: data.user.email,
+              password: '',
+              confirmPassword: '',
+            }))
+          }
         }
-        setApiKeys(settings.apiKeys)
-        setPreferences(settings.preferences)
+
+        if (settingsResult.status === 'fulfilled') {
+          const settings = settingsResult.value
+          setApiKeys(settings.apiKeys)
+          setPreferences(settings.preferences)
+        }
+
+        const accountErrorMessage = accountResult.status === 'rejected' ? accountResult.reason : null
+        const settingsErrorMessage = settingsResult.status === 'rejected' ? settingsResult.reason : null
+
+        if (accountErrorMessage && settingsErrorMessage) {
+          throw new Error(
+            `${accountErrorMessage instanceof Error ? accountErrorMessage.message : 'Failed to save account settings.'} ${settingsErrorMessage instanceof Error ? settingsErrorMessage.message : 'Failed to save workspace settings.'}`.trim(),
+          )
+        }
+
+        if (accountErrorMessage) {
+          setAccountMessage('Workspace settings saved, but account details could not be updated.')
+          setAccountError(accountErrorMessage instanceof Error ? accountErrorMessage.message : 'Failed to save account settings.')
+          return
+        }
+
+        if (settingsErrorMessage) {
+          setAccountMessage('Account details saved, but workspace settings could not be updated.')
+          setAccountError(settingsErrorMessage instanceof Error ? settingsErrorMessage.message : 'Failed to save workspace settings.')
+          return
+        }
+
+        setUserAccount((prev) => ({
+          ...prev,
+          password: '',
+          confirmPassword: '',
+        }))
         setAccountMessage('Settings saved.')
       })
       .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to save settings.'))

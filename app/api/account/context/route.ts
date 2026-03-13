@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAccountContext } from '@/lib/auth/server'
 import { requireAnyRole } from '@/lib/auth/permissions'
 import { getUserSupabaseClient } from '@/lib/supabase/user-server'
+import { supabaseAdmin } from '@/lib/supabase/server'
 
 export async function GET() {
   const ctx = await getAccountContext()
@@ -45,20 +46,26 @@ export async function PATCH(req: NextRequest) {
   const password = typeof body.password === 'string' ? body.password : ''
   const accountName = typeof body.accountName === 'string' ? body.accountName.trim() : ''
 
+  let updatedUser = ctx.user
+
   if (name || email || password) {
     const updatePayload: {
       email?: string
       password?: string
-      data?: { full_name?: string; name?: string }
+      user_metadata?: { full_name?: string; name?: string }
     } = {}
 
     if (email) updatePayload.email = email
     if (password) updatePayload.password = password
-    if (name) updatePayload.data = { full_name: name, name }
+    if (name) updatePayload.user_metadata = { full_name: name, name }
 
-    const { error } = await supabase.auth.updateUser(updatePayload)
+    const { data: userData, error } = await supabaseAdmin.auth.admin.updateUserById(ctx.user.id, updatePayload)
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    if (userData.user) {
+      updatedUser = userData.user
     }
   }
 
@@ -80,24 +87,32 @@ export async function PATCH(req: NextRequest) {
   }
 
   const refreshed = await getAccountContext()
-  if (!refreshed) return NextResponse.json({ error: 'Unable to refresh account context.' }, { status: 500 })
+  const responseUser = refreshed?.user ?? updatedUser
+  const responseAccount = refreshed
+    ? {
+        id: refreshed.accountId,
+        name: refreshed.accountName,
+        slug: refreshed.accountSlug,
+        role: refreshed.role,
+      }
+    : {
+        id: ctx.accountId,
+        name: accountName || ctx.accountName,
+        slug: ctx.accountSlug,
+        role: ctx.role,
+      }
 
   return NextResponse.json({
     user: {
-      id: refreshed.user.id,
-      email: refreshed.user.email ?? '',
+      id: responseUser.id,
+      email: responseUser.email ?? '',
       name:
-        (typeof refreshed.user.user_metadata?.full_name === 'string' && refreshed.user.user_metadata.full_name) ||
-        (typeof refreshed.user.user_metadata?.name === 'string' && refreshed.user.user_metadata.name) ||
-        refreshed.user.email?.split('@')[0] ||
+        (typeof responseUser.user_metadata?.full_name === 'string' && responseUser.user_metadata.full_name) ||
+        (typeof responseUser.user_metadata?.name === 'string' && responseUser.user_metadata.name) ||
+        responseUser.email?.split('@')[0] ||
         'User',
     },
-    account: {
-      id: refreshed.accountId,
-      name: refreshed.accountName,
-      slug: refreshed.accountSlug,
-      role: refreshed.role,
-    },
-    memberships: refreshed.memberships,
+    account: responseAccount,
+    memberships: refreshed?.memberships ?? ctx.memberships,
   })
 }
