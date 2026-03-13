@@ -20,7 +20,7 @@ function ScoreBadge({ score }: { score: number }) {
   const color =
     score >= 85 ? 'text-emerald-400 bg-emerald-500/10' :
     score >= 65 ? 'text-amber-400 bg-amber-500/10' :
-    'text-slate-400 bg-slate-500/10'
+    'text-[var(--text-muted)] bg-slate-500/10'
   return (
     <div className={cn('inline-flex items-center justify-center w-9 h-7 rounded-md text-xs font-bold tabular-nums', color)}>
       {score}
@@ -69,7 +69,7 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
   })
 
   function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return <ChevronUp className="w-3 h-3 text-slate-700" />
+    if (sortKey !== k) return <ChevronUp className="w-3 h-3 text-[var(--text-subtle)]" />
     return sortDir === 'asc'
       ? <ChevronUp className="w-3 h-3 text-indigo-400" />
       : <ChevronDown className="w-3 h-3 text-indigo-400" />
@@ -79,8 +79,8 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
     return (
       <th
         className={cn(
-          'px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap',
-          k && 'cursor-pointer hover:text-slate-300 select-none',
+          'px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap',
+          k && 'cursor-pointer hover:text-[var(--text-secondary)] select-none',
         )}
         onClick={() => k && toggleSort(k)}
       >
@@ -93,7 +93,7 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#1e1e38] bg-[#111120]">
+    <div className="overflow-x-auto rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_96%,white_4%)_0%,var(--panel-bg)_100%)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
       {selected.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-2.5 bg-indigo-600/10 border-b border-indigo-500/20">
           <span className="text-sm text-indigo-300 font-medium">{selected.size} selected</span>
@@ -104,7 +104,7 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
       )}
 
       <table className="w-full">
-        <thead className="border-b border-[#1e1e38]">
+        <thead className="border-b border-[var(--panel-border)]">
           <tr>
             <th className="w-10 px-4 py-3">
               <input
@@ -118,20 +118,20 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
             </th>
             <Th label="Name" k="name" />
             <Th label="Company" k="company" />
-            {!compact && <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</th>}
+            {!compact && <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Title</th>}
             <Th label="Score" k="score" />
             <Th label="Status" k="status" />
-            {!compact && <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">AI Insight</th>}
+            {!compact && <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">AI Insight</th>}
             <Th label="Activity" k="lastActivity" />
             <th className="px-4 py-3 w-10" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#14142a]">
+        <tbody className="divide-y divide-[color:color-mix(in_srgb,var(--panel-border)_75%,transparent_25%)]">
           {sorted.map((lead) => (
             <tr
               key={lead.id}
               className={cn(
-                'group hover:bg-white/[0.02] transition-colors',
+                'group hover:bg-[var(--hover-bg)] transition-colors',
                 selected.has(lead.id) && 'bg-indigo-500/5',
               )}
             >
@@ -148,20 +148,20 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
                 <div className="flex items-center gap-2.5">
                   <Avatar name={lead.name} size="sm" />
                   <div>
-                    <div className="text-sm font-medium text-slate-100">{lead.name}</div>
-                    <div className="text-xs text-slate-600">{lead.email}</div>
+                    <div className="text-sm font-medium text-[var(--text-primary)]">{lead.name}</div>
+                    <div className="text-xs text-[var(--text-subtle)]">{lead.email}</div>
                   </div>
                 </div>
               </td>
 
               <td className="px-4 py-3">
-                <div className="text-sm text-slate-300">{lead.company}</div>
-                <div className="text-xs text-slate-600">{lead.employees} emp.</div>
+                <div className="text-sm text-[var(--text-secondary)]">{lead.company}</div>
+                <div className="text-xs text-[var(--text-subtle)]">{lead.employees} emp.</div>
               </td>
 
               {!compact && (
                 <td className="px-4 py-3">
-                  <div className="text-sm text-slate-400 max-w-[160px] truncate">{lead.title}</div>
+                  <div className="text-sm text-[var(--text-muted)] max-w-[160px] truncate">{lead.title}</div>
                 </td>
               )}
 
@@ -178,47 +178,47 @@ export function LeadTable({ leads, compact = false }: LeadTableProps) {
 
               {!compact && (
                 <td className="px-4 py-3 max-w-[220px]">
-                  <div className="text-xs text-slate-500 truncate">{lead.aiInsight}</div>
+                  <div className="text-xs text-[var(--text-muted)] truncate">{lead.aiInsight}</div>
                 </td>
               )}
 
               <td className="px-4 py-3">
-                <span className="text-xs text-slate-600">{lead.lastActivity}</span>
+                <span className="text-xs text-[var(--text-subtle)]">{lead.lastActivity}</span>
               </td>
 
               <td className="px-4 py-3">
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     title="Email"
-                    className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5" />
                   </button>
                   <button
                     title="Phone"
-                    className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5" />
                   </button>
                   <button
                     title="Open"
-                    className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </button>
                   <div className="relative">
                     <button
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/[0.06] transition-colors"
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
                       onClick={() => setOpenMenu(openMenu === lead.id ? null : lead.id)}
                     >
                       <MoreHorizontal className="w-3.5 h-3.5" />
                     </button>
                     {openMenu === lead.id && (
-                      <div className="absolute right-0 top-full mt-1 w-40 bg-[#1a1a30] border border-[#252540] rounded-lg shadow-xl z-10 py-1 text-sm">
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-[var(--panel-bg)] border border-[var(--input-border)] rounded-lg shadow-xl z-10 py-1 text-sm">
                         {['Add to Campaign', 'Schedule Call', 'Add Note', 'Disqualify'].map((a) => (
                           <button
                             key={a}
-                            className="w-full text-left px-3 py-2 text-slate-300 hover:bg-white/[0.05] hover:text-white transition-colors"
+                            className="w-full text-left px-3 py-2 text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)] transition-colors"
                             onClick={() => setOpenMenu(null)}
                           >
                             {a}

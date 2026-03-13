@@ -89,9 +89,9 @@ export function DashboardSidebar() {
   }
 
   return (
-    <aside className="w-[220px] min-h-screen bg-[var(--shell-bg)] border-r border-[var(--panel-border)] flex flex-col">
+    <aside className="w-[220px] min-h-screen bg-[color:color-mix(in_srgb,var(--shell-bg)_92%,#eef4ff_8%)] border-r border-[var(--panel-border)] flex flex-col shadow-[inset_-1px_0_0_rgba(148,163,184,0.08)]">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-[var(--panel-border)]">
+      <div className="h-16 flex items-center px-5 border-b border-[var(--panel-border)] bg-[color:color-mix(in_srgb,var(--panel-bg)_82%,transparent_18%)]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <Zap className="w-4 h-4 text-white" strokeWidth={2.5} />
@@ -104,8 +104,8 @@ export function DashboardSidebar() {
       </div>
 
       {/* AI Status Pill */}
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+      <div className="px-4 py-4">
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 shadow-sm">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs font-medium text-emerald-400">AI Engine Running</span>
           <Sparkles className="w-3 h-3 text-emerald-400 ml-auto" />
@@ -117,7 +117,7 @@ export function DashboardSidebar() {
         <div className="text-[10px] font-semibold text-[var(--text-subtle)] uppercase tracking-wider px-3 mb-2">
           Platform
         </div>
-        <div className="space-y-0.5 mb-4">
+        <div className="space-y-1 mb-4">
           {navItems.map((item) => {
             const parentActive = isActive(item.href)
             const hasChildren  = item.children && item.children.length > 0
@@ -128,9 +128,9 @@ export function DashboardSidebar() {
                 <Link
                   href={item.children ? item.children[0].href : item.href}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                     parentActive
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
+                      ? 'bg-gradient-to-r from-indigo-500/18 to-violet-500/14 text-indigo-400 border border-indigo-500/25 shadow-[0_10px_24px_rgba(99,102,241,0.10)]'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]',
                   )}
                 >

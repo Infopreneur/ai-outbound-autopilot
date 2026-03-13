@@ -65,7 +65,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="h-16 border-b border-[var(--panel-border)] bg-[color:var(--app-bg)]/80 backdrop-blur-sm flex items-center px-6 gap-4 sticky top-0 z-20">
+    <header className="h-16 border-b border-[var(--panel-border)] bg-[color:color-mix(in_srgb,var(--app-bg)_78%,white_22%)]/90 backdrop-blur-xl flex items-center px-6 gap-4 sticky top-0 z-20 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm flex-1">
         <span className="text-[var(--text-subtle)] text-xs">AI Autopilot</span>
@@ -75,11 +75,11 @@ export function DashboardHeader() {
 
       {/* Search */}
       <div className="relative hidden md:flex items-center">
-        <Search className="absolute left-3 w-3.5 h-3.5 text-slate-600" />
+        <Search className="absolute left-3 w-3.5 h-3.5 text-[var(--text-subtle)]" />
         <input
           type="text"
           placeholder="Search leads, companies, deals…"
-          className="w-72 h-9 pl-9 pr-12 bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-colors"
+          className="w-72 h-10 pl-9 pr-12 bg-[color:color-mix(in_srgb,var(--panel-bg)_88%,white_12%)] border border-[var(--panel-border)] rounded-xl text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 transition-colors"
         />
         <kbd className="absolute right-3 text-[10px] text-[var(--text-subtle)] font-medium">⌘K</kbd>
       </div>
@@ -90,7 +90,7 @@ export function DashboardHeader() {
           <select
             value={account.id}
             onChange={(e) => switchAccount(e.target.value)}
-            className="h-9 max-w-[220px] px-3 bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
+            className="h-10 max-w-[240px] px-3 bg-[color:color-mix(in_srgb,var(--panel-bg)_88%,white_12%)] border border-[var(--panel-border)] rounded-xl text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             {memberships.map((membership) => (
               <option key={membership.accountId} value={membership.accountId}>
@@ -107,7 +107,7 @@ export function DashboardHeader() {
           </Button>
         )}
 
-        <button className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
+        <button className="relative w-10 h-10 flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors">
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
         </button>

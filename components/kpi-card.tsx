@@ -27,7 +27,7 @@ export function KpiCard({ title, value, change, changeLabel, icon, color = 'indi
   return (
     <div
       className={cn(
-        'bg-[#111120] border border-[#1e1e38] rounded-xl p-5 hover:border-[#252548] transition-all duration-200 shadow-lg',
+        'bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_94%,white_6%)_0%,color-mix(in_srgb,var(--panel-bg)_92%,transparent_8%)_100%)] border border-[var(--panel-border)] rounded-2xl p-5 hover:border-[color:color-mix(in_srgb,var(--panel-border)_75%,#6366f1_25%)] transition-all duration-200 shadow-[0_18px_40px_rgba(15,23,42,0.06)]',
         colors.glow,
       )}
     >
@@ -53,12 +53,12 @@ export function KpiCard({ title, value, change, changeLabel, icon, color = 'indi
         </div>
       </div>
 
-      <div className="text-[28px] font-bold text-white tracking-tight leading-none mb-1">
+      <div className="text-[28px] font-bold text-[var(--text-primary)] tracking-tight leading-none mb-1">
         {value}
       </div>
-      <div className="text-sm text-slate-500 font-medium">{title}</div>
+      <div className="text-sm text-[var(--text-muted)] font-medium">{title}</div>
       {changeLabel && (
-        <div className="text-xs text-slate-700 mt-1">{changeLabel}</div>
+        <div className="text-xs text-[var(--text-subtle)] mt-1">{changeLabel}</div>
       )}
     </div>
   )
