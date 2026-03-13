@@ -66,6 +66,11 @@ interface MembersPayload {
   invitations: WorkspaceInvitation[]
 }
 
+interface AccountSettingsPayload {
+  apiKeys: ApiKeys
+  preferences: Preferences
+}
+
 export default function SystemSettingsPage() {
   const router = useRouter()
   const [loadingAccount, setLoadingAccount] = useState(true)
@@ -76,6 +81,7 @@ export default function SystemSettingsPage() {
   const [accountError, setAccountError] = useState<string | null>(null)
   const [membersMessage, setMembersMessage] = useState<string | null>(null)
   const [membersError, setMembersError] = useState<string | null>(null)
+  const [loadingSettings, setLoadingSettings] = useState(true)
   const [workspace, setWorkspace] = useState({ name: '', slug: '', role: 'member' })
   const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
@@ -83,12 +89,6 @@ export default function SystemSettingsPage() {
   const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member')
 
   const [apiKeys, setApiKeys] = useState<ApiKeys>(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('apiKeys') : null
-    if (saved) {
-      try {
-        return JSON.parse(saved) as ApiKeys
-      } catch {}
-    }
     return {
       anthropic: '',
       supabaseUrl: '',
@@ -106,15 +106,6 @@ export default function SystemSettingsPage() {
   })
 
   const [preferences, setPreferences] = useState<Preferences>(() => {
-    // initialize from localStorage if available
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('preferences') : null
-    if (saved) {
-      try {
-        return JSON.parse(saved) as Preferences
-      } catch {
-        // ignore
-      }
-    }
     return { theme: 'dark', notifications: true, dataRetention: '90' }
   })
 
@@ -131,9 +122,20 @@ export default function SystemSettingsPage() {
         root.classList.add(preferences.theme)
       }
     }
-    // persist
-    localStorage.setItem('preferences', JSON.stringify(preferences))
   }, [preferences])
+
+  useEffect(() => {
+    fetch('/api/account/settings')
+      .then((r) => r.json())
+      .then((data: AccountSettingsPayload | { error?: string }) => {
+        if ('error' in data && data.error) throw new Error(data.error)
+        const payload = data as AccountSettingsPayload
+        setApiKeys(payload.apiKeys)
+        setPreferences(payload.preferences)
+      })
+      .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to load workspace settings.'))
+      .finally(() => setLoadingSettings(false))
+  }, [])
 
   useEffect(() => {
     fetch('/api/account/context')
@@ -251,11 +253,7 @@ export default function SystemSettingsPage() {
   }
 
   const handleApiKeyChange = (key: keyof ApiKeys, value: string) => {
-    setApiKeys((prev) => {
-      const next = { ...prev, [key]: value }
-      if (typeof window !== 'undefined') localStorage.setItem('apiKeys', JSON.stringify(next))
-      return next
-    })
+    setApiKeys((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleUserChange = (key: keyof UserAccount, value: string) => {
@@ -296,14 +294,20 @@ export default function SystemSettingsPage() {
         if (!r.ok) throw new Error(data.error ?? 'Failed to save account settings.')
         return data as AccountContextPayload
       }),
-      Promise.resolve().then(() => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('apiKeys', JSON.stringify(apiKeys))
-          localStorage.setItem('preferences', JSON.stringify(preferences))
-        }
+      fetch('/api/account/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKeys,
+          preferences,
+        }),
+      }).then(async (r) => {
+        const data = await r.json()
+        if (!r.ok) throw new Error(data.error ?? 'Failed to save workspace settings.')
+        return data as AccountSettingsPayload
       }),
     ])
-      .then(([data]) => {
+      .then(([data, settings]) => {
         setUserAccount((prev) => ({
           ...prev,
           name: data.user.name,
@@ -324,6 +328,8 @@ export default function SystemSettingsPage() {
             confirmPassword: '',
           }))
         }
+        setApiKeys(settings.apiKeys)
+        setPreferences(settings.preferences)
         setAccountMessage('Settings saved.')
       })
       .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to save settings.'))
@@ -357,6 +363,11 @@ export default function SystemSettingsPage() {
           </p>
         </div>
         <div className="space-y-4">
+          {loadingSettings && (
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Loader2 className="w-4 h-4 animate-spin" />Loading workspace settings…
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="anthropic" className="text-slate-300 flex items-center gap-2 text-sm font-medium">
