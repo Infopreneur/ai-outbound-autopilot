@@ -20,9 +20,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin }             from '@/lib/supabase/server'
+import { getAccountContext }         from '@/lib/auth/server'
+import { requireAnyRole }            from '@/lib/auth/permissions'
+import { getUserSupabaseClient }     from '@/lib/supabase/user-server'
 
 export async function POST(req: NextRequest) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    requireAnyRole(ctx, ['admin'])
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   let body: Record<string, unknown>
   try {
     body = await req.json()
@@ -41,6 +52,7 @@ export async function POST(req: NextRequest) {
 
   const rows = (keywords as string[]).flatMap((keyword) =>
     (cities as string[]).map((city) => ({
+      account_id:  ctx.accountId,
       industry:    typeof industry === 'string' ? industry : null,
       keyword,
       city,
@@ -50,9 +62,9 @@ export async function POST(req: NextRequest) {
     })),
   )
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('discovery_queue')
-    .upsert(rows, { onConflict: 'keyword,city,state', ignoreDuplicates: true })
+    .upsert(rows, { onConflict: 'account_id,keyword,city,state', ignoreDuplicates: true })
     .select('id')
 
   if (error) {
@@ -69,9 +81,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const { data, error } = await supabaseAdmin
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
+  const { data, error } = await supabase
     .from('discovery_queue')
     .select('status')
+    .eq('account_id', ctx.accountId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

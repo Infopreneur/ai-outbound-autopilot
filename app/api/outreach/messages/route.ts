@@ -3,21 +3,27 @@
  * POST /api/outreach/messages  — save a message (draft or approved)
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin }             from '@/lib/supabase/server'
+import { getAccountContext }         from '@/lib/auth/server'
+import { getUserSupabaseClient }     from '@/lib/supabase/user-server'
 
 export async function GET(req: NextRequest) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   const { searchParams } = new URL(req.url)
   const status    = searchParams.get('status')     // draft | approved | queued | sent
   const companyId = searchParams.get('companyId')
   const offerId   = searchParams.get('offerId')
   const limit     = Math.min(Number(searchParams.get('limit') ?? 100), 500)
 
-  let query = supabaseAdmin
+  let query = supabase
     .from('outreach_messages')
     .select(`
       *,
       companies ( id, name, city, state, niche, opportunity_tier )
     `)
+    .eq('account_id', ctx.accountId)
     .order('created_at', { ascending: false })
     .limit(limit)
 
@@ -32,6 +38,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: Request) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   let body: Record<string, unknown>
   try { body = await req.json() }
   catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 }) }
@@ -45,9 +55,21 @@ export async function POST(req: Request) {
   if (!companyId || !offer || !channel || !messageBody)
     return NextResponse.json({ error: 'companyId, offer, channel, and messageBody are required.' }, { status: 422 })
 
-  const { data, error } = await supabaseAdmin
+  const { data: company, error: companyError } = await supabase
+    .from('companies')
+    .select('id')
+    .eq('id', companyId)
+    .eq('account_id', ctx.accountId)
+    .maybeSingle()
+
+  if (companyError || !company) {
+    return NextResponse.json({ error: 'Company not found.' }, { status: 404 })
+  }
+
+  const { data, error } = await supabase
     .from('outreach_messages')
     .insert({
+      account_id:    ctx.accountId,
       company_id:    companyId,
       offer,
       channel,

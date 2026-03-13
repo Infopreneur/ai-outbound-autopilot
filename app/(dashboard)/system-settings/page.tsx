@@ -1,21 +1,86 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Key, User, Settings as SettingsIcon, Mail, Globe, Bot, Zap } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
+import { Key, User, Settings as SettingsIcon, Mail, Globe, Bot, Zap, Loader2, Building2, Users, Trash2 } from 'lucide-react'
+
+interface ApiKeys {
+  anthropic: string
+  supabaseUrl: string
+  supabaseAnon: string
+  supabaseService: string
+  googleMaps: string
+  emailApi: string
+  scrapingApi: string
+  automationApi: string
+}
+
+interface UserAccount {
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+interface Preferences {
+  theme: 'light' | 'dark' | 'system'
+  notifications: boolean
+  dataRetention: string
+}
+
+interface AccountContextPayload {
+  user: {
+    id: string
+    email: string
+    name: string
+  }
+  account: {
+    id: string
+    name: string
+    slug: string
+    role: string
+  }
+}
+
+interface WorkspaceMember {
+  id: string
+  userId: string
+  name: string
+  email: string
+  role: string
+  createdAt: string
+}
+
+interface WorkspaceInvitation {
+  id: string
+  email: string
+  role: string
+  status: string
+  createdAt: string
+}
+
+interface MembersPayload {
+  members: WorkspaceMember[]
+  invitations: WorkspaceInvitation[]
+}
 
 export default function SystemSettingsPage() {
-  // API Keys
-  interface ApiKeys {
-    anthropic: string
-    supabaseUrl: string
-    supabaseAnon: string
-    supabaseService: string
-    googleMaps: string
-    emailApi: string
-    scrapingApi: string
-    automationApi: string
-  }
+  const router = useRouter()
+  const [loadingAccount, setLoadingAccount] = useState(true)
+  const [savingAccount, setSavingAccount] = useState(false)
+  const [loadingMembers, setLoadingMembers] = useState(true)
+  const [savingMembers, setSavingMembers] = useState(false)
+  const [accountMessage, setAccountMessage] = useState<string | null>(null)
+  const [accountError, setAccountError] = useState<string | null>(null)
+  const [membersMessage, setMembersMessage] = useState<string | null>(null)
+  const [membersError, setMembersError] = useState<string | null>(null)
+  const [workspace, setWorkspace] = useState({ name: '', slug: '', role: 'member' })
+  const [members, setMembers] = useState<WorkspaceMember[]>([])
+  const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([])
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member')
 
   const [apiKeys, setApiKeys] = useState<ApiKeys>(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('apiKeys') : null
@@ -36,29 +101,9 @@ export default function SystemSettingsPage() {
     }
   })
 
-  // User Account
-  interface UserAccount {
-    name: string
-    email: string
-    password: string
-    confirmPassword: string
-  }
   const [userAccount, setUserAccount] = useState<UserAccount>(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('userAccount') : null
-    if (saved) {
-      try {
-        return JSON.parse(saved) as UserAccount
-      } catch {}
-    }
     return { name: 'Alex Kim', email: 'alex@company.com', password: '', confirmPassword: '' }
   })
-
-  // System Preferences
-  interface Preferences {
-    theme: 'light' | 'dark' | 'system'
-    notifications: boolean
-    dataRetention: string
-  }
 
   const [preferences, setPreferences] = useState<Preferences>(() => {
     // initialize from localStorage if available
@@ -90,6 +135,121 @@ export default function SystemSettingsPage() {
     localStorage.setItem('preferences', JSON.stringify(preferences))
   }, [preferences])
 
+  useEffect(() => {
+    fetch('/api/account/context')
+      .then((r) => r.json())
+      .then((data: AccountContextPayload | { error?: string }) => {
+        if ('error' in data && data.error) {
+          throw new Error(data.error)
+        }
+        const payload = data as AccountContextPayload
+        setUserAccount((prev) => ({
+          ...prev,
+          name: payload.user.name,
+          email: payload.user.email,
+          password: '',
+          confirmPassword: '',
+        }))
+        setWorkspace({
+          name: payload.account.name,
+          slug: payload.account.slug,
+          role: payload.account.role,
+        })
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userAccount', JSON.stringify({
+            name: payload.user.name,
+            email: payload.user.email,
+            password: '',
+            confirmPassword: '',
+          }))
+        }
+      })
+      .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to load account settings.'))
+      .finally(() => setLoadingAccount(false))
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/account/members')
+      .then((r) => r.json())
+      .then((data: MembersPayload | { error?: string }) => {
+        if ('error' in data && data.error) throw new Error(data.error)
+        const payload = data as MembersPayload
+        setMembers(payload.members)
+        setInvitations(payload.invitations)
+      })
+      .catch((err) => setMembersError(err instanceof Error ? err.message : 'Failed to load members.'))
+      .finally(() => setLoadingMembers(false))
+  }, [])
+
+  function applyMembersPayload(payload: MembersPayload) {
+    setMembers(payload.members)
+    setInvitations(payload.invitations)
+  }
+
+  async function inviteMember() {
+    setSavingMembers(true)
+    setMembersError(null)
+    setMembersMessage(null)
+    try {
+      const res = await fetch('/api/account/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to invite member.')
+      applyMembersPayload(data as MembersPayload)
+      setInviteEmail('')
+      setInviteRole('member')
+      setMembersMessage('Invitation created.')
+    } catch (err) {
+      setMembersError(err instanceof Error ? err.message : 'Failed to invite member.')
+    } finally {
+      setSavingMembers(false)
+    }
+  }
+
+  async function updateMemberRole(membershipId: string, role: string) {
+    setSavingMembers(true)
+    setMembersError(null)
+    try {
+      const res = await fetch('/api/account/members', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ membershipId, role }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to update role.')
+      applyMembersPayload(data as MembersPayload)
+      setMembersMessage('Role updated.')
+    } catch (err) {
+      setMembersError(err instanceof Error ? err.message : 'Failed to update role.')
+    } finally {
+      setSavingMembers(false)
+    }
+  }
+
+  async function removeMember(params: { membershipId?: string; invitationId?: string }) {
+    setSavingMembers(true)
+    setMembersError(null)
+    try {
+      const query = new URLSearchParams()
+      if (params.membershipId) query.set('membershipId', params.membershipId)
+      if (params.invitationId) query.set('invitationId', params.invitationId)
+      const res = await fetch(`/api/account/members?${query.toString()}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to remove access.')
+      applyMembersPayload(data as MembersPayload)
+      setMembersMessage(params.invitationId ? 'Invitation cancelled.' : 'Member removed.')
+    } catch (err) {
+      setMembersError(err instanceof Error ? err.message : 'Failed to remove access.')
+    } finally {
+      setSavingMembers(false)
+    }
+  }
+
   const handleApiKeyChange = (key: keyof ApiKeys, value: string) => {
     setApiKeys((prev) => {
       const next = { ...prev, [key]: value }
@@ -111,22 +271,71 @@ export default function SystemSettingsPage() {
   }
 
   const saveSettings = () => {
-    // persist to localStorage as well
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('apiKeys', JSON.stringify(apiKeys))
-      localStorage.setItem('userAccount', JSON.stringify(userAccount))
-      localStorage.setItem('preferences', JSON.stringify(preferences))
+    if (userAccount.password && userAccount.password !== userAccount.confirmPassword) {
+      setAccountError('Passwords do not match.')
+      setAccountMessage(null)
+      return
     }
 
-    alert('Settings saved! (This is a demo - in production, this would update your backend)')
-    console.log('API Keys:', apiKeys)
-    console.log('User Account:', userAccount)
-    console.log('Preferences:', preferences)
+    setSavingAccount(true)
+    setAccountError(null)
+    setAccountMessage(null)
+
+    Promise.all([
+      fetch('/api/account/context', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userAccount.name,
+          email: userAccount.email,
+          password: userAccount.password || undefined,
+          accountName: workspace.name,
+        }),
+      }).then(async (r) => {
+        const data = await r.json()
+        if (!r.ok) throw new Error(data.error ?? 'Failed to save account settings.')
+        return data as AccountContextPayload
+      }),
+      Promise.resolve().then(() => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('apiKeys', JSON.stringify(apiKeys))
+          localStorage.setItem('preferences', JSON.stringify(preferences))
+        }
+      }),
+    ])
+      .then(([data]) => {
+        setUserAccount((prev) => ({
+          ...prev,
+          name: data.user.name,
+          email: data.user.email,
+          password: '',
+          confirmPassword: '',
+        }))
+        setWorkspace({
+          name: data.account.name,
+          slug: data.account.slug,
+          role: data.account.role,
+        })
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userAccount', JSON.stringify({
+            name: data.user.name,
+            email: data.user.email,
+            password: '',
+            confirmPassword: '',
+          }))
+        }
+        setAccountMessage('Settings saved.')
+      })
+      .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to save settings.'))
+      .finally(() => setSavingAccount(false))
   }
 
   const logout = () => {
-    // In a real app, this would log out the user
-    alert('Logged out! (Demo)')
+    supabase.auth.signOut().finally(async () => {
+      await fetch('/api/auth/session', { method: 'DELETE', credentials: 'include' })
+      router.push('/login')
+      router.refresh()
+    })
   }
 
   return (
@@ -260,6 +469,127 @@ export default function SystemSettingsPage() {
         </div>
       </div>
 
+      <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Workspace Access
+          </h2>
+          <p className="text-slate-400 text-sm mt-1">
+            Invite teammates and manage roles for this workspace.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {(workspace.role === 'owner' || workspace.role === 'admin') && (
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_140px_auto] gap-3">
+              <input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="teammate@company.com"
+                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
+                className="px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <Button onClick={inviteMember} disabled={savingMembers || !inviteEmail.trim()}>
+                {savingMembers ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Invite
+              </Button>
+            </div>
+          )}
+
+          {membersError && (
+            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+              {membersError}
+            </div>
+          )}
+          {membersMessage && (
+            <div className="text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-md px-3 py-2">
+              {membersMessage}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-slate-300">Members</div>
+            {loadingMembers ? (
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Loader2 className="w-4 h-4 animate-spin" />Loading members…
+              </div>
+            ) : members.length === 0 ? (
+              <div className="text-sm text-slate-500">No members yet.</div>
+            ) : (
+              <div className="space-y-2">
+                {members.map((member) => (
+                  <div key={member.id} className="flex flex-col md:flex-row md:items-center gap-3 justify-between rounded-md border border-[#1e1e38] bg-[#111120] px-4 py-3">
+                    <div>
+                      <div className="text-sm font-medium text-white">{member.name}</div>
+                      <div className="text-xs text-slate-500">{member.email}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(workspace.role === 'owner' || workspace.role === 'admin') ? (
+                        <select
+                          value={member.role}
+                          onChange={(e) => updateMemberRole(member.id, e.target.value)}
+                          className="px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="owner">Owner</option>
+                          <option value="admin">Admin</option>
+                          <option value="member">Member</option>
+                        </select>
+                      ) : (
+                        <span className="text-xs text-slate-400 capitalize">{member.role}</span>
+                      )}
+                      {(workspace.role === 'owner' || workspace.role === 'admin') && (
+                        <button
+                          onClick={() => removeMember({ membershipId: member.id })}
+                          className="p-2 rounded-md border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                          title="Remove member"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-slate-300">Pending Invitations</div>
+            {invitations.length === 0 ? (
+              <div className="text-sm text-slate-500">No pending invitations.</div>
+            ) : (
+              <div className="space-y-2">
+                {invitations.map((invite) => (
+                  <div key={invite.id} className="flex items-center justify-between rounded-md border border-[#1e1e38] bg-[#111120] px-4 py-3">
+                    <div>
+                      <div className="text-sm font-medium text-white">{invite.email}</div>
+                      <div className="text-xs text-slate-500 capitalize">{invite.role} • {invite.status}</div>
+                    </div>
+                    {(workspace.role === 'owner' || workspace.role === 'admin') && (
+                      <button
+                        onClick={() => removeMember({ invitationId: invite.id })}
+                        className="p-2 rounded-md border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                        title="Cancel invitation"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* User Account */}
       <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
         <div className="mb-4">
@@ -272,6 +602,11 @@ export default function SystemSettingsPage() {
           </p>
         </div>
         <div className="space-y-4">
+          {loadingAccount && (
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <Loader2 className="w-4 h-4 animate-spin" />Loading account settings…
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="name" className="text-slate-300 text-sm font-medium">Full Name</label>
@@ -313,6 +648,41 @@ export default function SystemSettingsPage() {
               />
             </div>
           </div>
+          <hr className="border-[#1e1e38]" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="workspaceName" className="text-slate-300 text-sm font-medium flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                Workspace Name
+              </label>
+              <input
+                id="workspaceName"
+                value={workspace.name}
+                onChange={(e) => setWorkspace((prev) => ({ ...prev, name: e.target.value }))}
+                disabled={workspace.role !== 'owner' && workspace.role !== 'admin'}
+                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="workspaceRole" className="text-slate-300 text-sm font-medium">Workspace Role</label>
+              <input
+                id="workspaceRole"
+                value={`${workspace.role} • ${workspace.slug}`}
+                disabled
+                className="w-full px-3 py-2 bg-[#151526] border border-[#2a2a4e] rounded-md text-slate-400"
+              />
+            </div>
+          </div>
+          {accountError && (
+            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+              {accountError}
+            </div>
+          )}
+          {accountMessage && (
+            <div className="text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-md px-3 py-2">
+              {accountMessage}
+            </div>
+          )}
           <hr className="border-[#1e1e38]" />
           <Button variant="outline" onClick={logout} className="border-[#2a2a4e] text-slate-300 hover:bg-[#1a1a2e]">
             Logout
@@ -382,7 +752,8 @@ export default function SystemSettingsPage() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={saveSettings} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={saveSettings} disabled={savingAccount} className="bg-indigo-600 hover:bg-indigo-700">
+          {savingAccount ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Save Settings
         </Button>
       </div>

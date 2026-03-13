@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getAccountContext } from '@/lib/auth/server'
+import { requireAnyRole } from '@/lib/auth/permissions'
+import { getUserSupabaseClient } from '@/lib/supabase/user-server'
 import { scoreOpportunity } from '@/lib/scoring/opportunity-score'
 
 export async function POST() {
-  const { data: companies, error } = await supabaseAdmin
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    requireAnyRole(ctx, ['admin'])
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
+  const { data: companies, error } = await supabase
     .from('companies')
     .select('id, name, niche, website, phone, city, state, rating, review_count')
+    .eq('account_id', ctx.accountId)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -34,7 +46,7 @@ export async function POST() {
     })
 
   for (const row of updates) {
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await supabase
       .from('companies')
       .update({
         lead_volume_score:      row.lead_volume_score,
@@ -51,6 +63,7 @@ export async function POST() {
         last_scored_at:         row.last_scored_at,
       })
       .eq('id', row.id)
+      .eq('account_id', ctx.accountId)
 
     if (updateError) {
       console.error('Score update failed for company', row.id, updateError.message)

@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getAccountContext } from '@/lib/auth/server'
+import { getUserSupabaseClient } from '@/lib/supabase/user-server'
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   const { id } = await params
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('companies')
     .select('*')
     .eq('id', id)
+    .eq('account_id', ctx.accountId)
     .single()
 
   if (error || !data) {
@@ -24,6 +30,10 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   const { id } = await params
   const body = await req.json()
   const allowed: Record<string, unknown> = {}
@@ -41,10 +51,11 @@ export async function PATCH(
   if (Object.keys(allowed).length === 0) {
     return NextResponse.json({ error: 'No updatable fields provided' }, { status: 422 })
   }
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('companies')
     .update(allowed)
     .eq('id', id)
+    .eq('account_id', ctx.accountId)
     .select()
     .single()
   if (error) {

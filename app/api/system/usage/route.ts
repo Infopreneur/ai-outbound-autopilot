@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse }                      from 'next/server'
+import { getAccountContext } from '@/lib/auth/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { getLogsToday, getLogsThisMonth, getRecentLogs,
          getSpendToday, getSpendThisMonth, getAiCallsToday } from '@/lib/usage/cost-tracker'
@@ -17,6 +18,9 @@ import { getJobsByStatus }                                from '@/lib/discovery/
 import { mockSystemHealthMetrics }                        from '@/lib/mock/system-health'
 
 export async function GET(request: NextRequest) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { searchParams } = new URL(request.url)
   const period = searchParams.get('period') ?? 'today'
   const limit  = Math.min(parseInt(searchParams.get('limit') ?? '50', 10), 200)
@@ -53,11 +57,13 @@ export async function GET(request: NextRequest) {
   const { count: emailCount } = await supabaseAdmin
     .from('outreach_messages')
     .select('id', { head: true, count: 'exact' })
+    .eq('account_id', ctx.accountId)
     .eq('status', 'sent')
     .eq('channel', 'email')
   const { count: smsCount } = await supabaseAdmin
     .from('outreach_messages')
     .select('id', { head: true, count: 'exact' })
+    .eq('account_id', ctx.accountId)
     .eq('status', 'sent')
     .eq('channel', 'sms')
 

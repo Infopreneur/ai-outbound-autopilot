@@ -19,13 +19,24 @@
  */
 console.log("MAPS DISCOVERY ROUTE HIT")
 import { NextResponse }             from 'next/server'
+import { getAccountContext }        from '@/lib/auth/server'
+import { requireAnyRole }           from '@/lib/auth/permissions'
 import { runMapsSource }            from '@/lib/discovery/sources/maps'
 import { INDUSTRY_PRESETS }         from '@/lib/discovery/industries'
 import { supabaseAdmin }            from '@/lib/supabase/server'
+import { getUserSupabaseClient }    from '@/lib/supabase/user-server'
 import { logUsage }                 from '@/lib/usage/cost-tracker'
 
 export async function POST(req: Request) {
   console.log('🗺️  POST /api/discovery/sources/maps HIT')
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    requireAnyRole(ctx, ['admin'])
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const supabase = getUserSupabaseClient(ctx.accessToken)
 
   let body: Record<string, unknown>
   try {
@@ -68,10 +79,11 @@ export async function POST(req: Request) {
 
     // Persist all leads to Supabase
     if (leads.length > 0) {
-      const { error: companyErr } = await supabaseAdmin
+      const { error: companyErr } = await supabase
         .from('companies')
         .upsert(
           leads.map((l) => ({
+            account_id:    ctx.accountId,
             name:         l.name,
             place_id:     l.placeId      ?? null,
             city:         l.city         ?? null,
@@ -81,7 +93,7 @@ export async function POST(req: Request) {
             phone:        l.phone        ?? null,
             website:      l.website      ?? null,
           })),
-          { onConflict: 'place_id', ignoreDuplicates: true },
+          { onConflict: 'account_id,place_id', ignoreDuplicates: true },
         )
 
       if (companyErr) console.error('[maps/route] companies upsert:', companyErr.message)
@@ -109,9 +121,10 @@ export async function POST(req: Request) {
       if (rawErr) console.error('[maps/route] scrape_results_raw insert:', rawErr.message)
     }
 
-    await supabaseAdmin
+    await supabase
       .from('discovery_jobs')
       .insert({
+        account_id:    ctx.accountId,
         name:          `${effectiveNiche}${city ? ` — ${city.trim()}` : ''}`,
         source:        'maps',
         niche:         effectiveNiche,

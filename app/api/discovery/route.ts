@@ -16,10 +16,13 @@
  */
 console.log("DISCOVERY ROOT ROUTE HIT")
 import { NextResponse }                      from 'next/server'
+import { getAccountContext }                 from '@/lib/auth/server'
+import { requireAnyRole }                    from '@/lib/auth/permissions'
 import { runGooglePlacesDiscovery }           from '@/lib/discovery/google-places'
 import { runApifySource }                     from '@/lib/discovery/sources/apify'
 import { logUsage }                           from '@/lib/usage/cost-tracker'
 import { supabaseAdmin }                      from '@/lib/supabase/server'
+import { getUserSupabaseClient }              from '@/lib/supabase/user-server'
 import { scoreOpportunity }                   from '@/lib/scoring/opportunity-score'
 import type { NormalizedCompanyLead }         from '@/lib/discovery/types'
 import type { DiscoveryRunParams, JobSource } from '@/lib/discovery/types'
@@ -78,18 +81,32 @@ function buildScoredRows(leads: NormalizedCompanyLead[], niche: string, source: 
 }
 
 // ── Count how many place_ids already exist ────────────────────────────────────
-async function countExisting(placeIds: (string | null)[]): Promise<number> {
+async function countExisting(
+  accountId: string,
+  placeIds: (string | null)[],
+  supabase: ReturnType<typeof getUserSupabaseClient>,
+): Promise<number> {
   const ids = placeIds.filter(Boolean) as string[]
   if (ids.length === 0) return 0
-  const { count } = await supabaseAdmin
+  const { count } = await supabase
     .from('companies')
     .select('id', { count: 'exact', head: true })
+    .eq('account_id', accountId)
     .in('place_id', ids)
   return count ?? 0
 }
 
 export async function POST(req: Request) {
   console.log('🎯 POST /api/discovery HIT')
+
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    requireAnyRole(ctx, ['admin'])
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const supabase = getUserSupabaseClient(ctx.accessToken)
 
   let body: Record<string, unknown>
   try {
@@ -135,18 +152,19 @@ export async function POST(req: Request) {
 
         if (result.leads.length > 0) {
           const rows = buildScoredRows(result.leads, params.niche, 'google-native')
+            .map((row) => ({ ...row, account_id: ctx.accountId }))
           hotCount = rows.filter((r) => r.opportunity_tier === 'hot').length
 
           // Count pre-existing to calculate inserted vs updated
-          const existing = await countExisting(result.leads.map((l) => l.placeId ?? null))
+          const existing = await countExisting(ctx.accountId, result.leads.map((l) => l.placeId ?? null), supabase)
           insertedCount  = result.leads.length - existing
           updatedCount   = existing
 
           console.log(`[discovery/route] upserting ${rows.length} companies (${insertedCount} new, ${updatedCount} updated)…`)
 
-          const { error: companyErr } = await supabaseAdmin
+          const { error: companyErr } = await supabase
             .from('companies')
-            .upsert(rows, { onConflict: 'place_id' })
+            .upsert(rows, { onConflict: 'account_id,place_id' })
 
           if (companyErr) {
             console.error('[discovery/route] ❌ companies upsert FAILED', companyErr.message)
@@ -166,7 +184,8 @@ export async function POST(req: Request) {
         }
 
         // discovery_jobs record
-        await supabaseAdmin.from('discovery_jobs').insert({
+        await supabase.from('discovery_jobs').insert({
+          account_id:    ctx.accountId,
           name:          `${params.niche}${params.city ? ` — ${params.city}` : ''}`,
           source:        'google-native',
           niche:         params.niche,
@@ -211,15 +230,16 @@ export async function POST(req: Request) {
 
         if (result.leads.length > 0) {
           const rows = buildScoredRows(result.leads, params.niche, 'apify')
+            .map((row) => ({ ...row, account_id: ctx.accountId }))
           hotCount = rows.filter((r) => r.opportunity_tier === 'hot').length
 
-          const existing = await countExisting(result.leads.map((l) => l.placeId ?? null))
+          const existing = await countExisting(ctx.accountId, result.leads.map((l) => l.placeId ?? null), supabase)
           insertedCount  = result.leads.length - existing
           updatedCount   = existing
 
-          const { error: companyErr } = await supabaseAdmin
+          const { error: companyErr } = await supabase
             .from('companies')
-            .upsert(rows, { onConflict: 'place_id' })
+            .upsert(rows, { onConflict: 'account_id,place_id' })
           if (companyErr) console.error('[apify] companies upsert:', companyErr.message)
           else console.log(`[apify] ✅ upsert OK — ${insertedCount} new, ${updatedCount} updated`)
         }

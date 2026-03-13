@@ -6,9 +6,10 @@ import {
   Sparkles,
   Filter,
 } from 'lucide-react'
+import { requireAccountContext } from '@/lib/auth/server'
 import { PipelineBoard } from '@/components/pipeline-board'
 import { Button } from '@/components/ui/button'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getUserSupabaseClient } from '@/lib/supabase/user-server'
 import { mapDealRow } from '@/lib/deals'
 import { formatCurrency } from '@/lib/utils'
 
@@ -17,10 +18,12 @@ export default async function PipelinePage({
 }: {
   searchParams?: Promise<{ deal?: string }>
 }) {
+  const ctx = await requireAccountContext()
+  const supabase = getUserSupabaseClient(ctx.accessToken)
   const params = await searchParams
   const highlightedDealId = params?.deal
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('deals')
     .select(`
       id,
@@ -35,6 +38,7 @@ export default async function PipelinePage({
       source_prospect_id,
       companies:company_id ( id, name )
     `)
+    .eq('account_id', ctx.accountId)
     .order('created_at', { ascending: false })
 
   if (error) {

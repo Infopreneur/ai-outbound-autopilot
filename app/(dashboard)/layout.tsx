@@ -1,7 +1,10 @@
+import { requireAccountContext } from '@/lib/auth/server'
 import { DashboardSidebar } from '@/components/dashboard-sidebar'
 import { DashboardHeader } from '@/components/dashboard-header'
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  await requireAccountContext()
+
   return (
     <div className="flex min-h-screen bg-[#07070e]">
       <DashboardSidebar />

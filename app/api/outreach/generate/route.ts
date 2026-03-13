@@ -8,7 +8,9 @@
  * Body: { companyId, offerId, angle, channel }
  */
 import { NextResponse }            from 'next/server'
-import { supabaseAdmin }           from '@/lib/supabase/server'
+import { getAccountContext }       from '@/lib/auth/server'
+import { getOrCreateReputationReport } from '@/lib/reports/reputation-report'
+import { getUserSupabaseClient }   from '@/lib/supabase/user-server'
 import { getAIClient }             from '@/lib/ai/client'
 import { buildOfferMessagePrompt } from '@/lib/ai/prompts'
 import { logUsage }                from '@/lib/usage/cost-tracker'
@@ -19,6 +21,10 @@ const VALID_ANGLES: MessageAngle[] = ['pain', 'opportunity', 'social-proof']
 const VALID_CHANNELS               = ['email', 'sms', 'linkedin'] as const
 
 export async function POST(req: Request) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   let body: Record<string, unknown>
   try { body = await req.json() }
   catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 }) }
@@ -35,10 +41,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `"channel" must be one of: ${VALID_CHANNELS.join(', ')}` }, { status: 422 })
 
   // Fetch company
-  const { data: company, error: companyErr } = await supabaseAdmin
+  const { data: company, error: companyErr } = await supabase
     .from('companies')
     .select('*')
     .eq('id', companyId)
+    .eq('account_id', ctx.accountId)
     .single()
 
   if (companyErr || !company)
@@ -59,14 +66,9 @@ export async function POST(req: Request) {
   let reportUrl: string | undefined
   if (offerId === 'positioning-report') {
     try {
-      const reportRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/report/${companyId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      if (reportRes.ok) {
-        const reportData = await reportRes.json()
-        reportUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/report/${reportData.share_token}`
-      }
+      const reportData = await getOrCreateReputationReport(companyId, ctx.accountId, supabase, false)
+      const origin = new URL(req.url).origin
+      reportUrl = `${origin}/report/${reportData.share_token}`
     } catch (err) {
       console.warn('[outreach/generate] Failed to generate report for URL:', err)
       // Continue without URL — message will still be generated

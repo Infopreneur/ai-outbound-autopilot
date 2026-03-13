@@ -23,11 +23,14 @@ export async function POST(req: Request) {
   catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 }) }
 
   const { messageId, companyId, eventType, metadata } = body
+  const accountId = typeof body.accountId === 'string' ? body.accountId : ''
 
   if (!messageId || typeof messageId !== 'string')
     return NextResponse.json({ error: '"messageId" required.' }, { status: 422 })
   if (!companyId || typeof companyId !== 'string')
     return NextResponse.json({ error: '"companyId" required.' }, { status: 422 })
+  if (!accountId)
+    return NextResponse.json({ error: '"accountId" required.' }, { status: 422 })
   if (!VALID_EVENTS.includes(eventType as EventType))
     return NextResponse.json({ error: `"eventType" must be one of: ${VALID_EVENTS.join(', ')}` }, { status: 422 })
 
@@ -63,6 +66,7 @@ export async function POST(req: Request) {
       .from('outreach_messages')
       .update(update)
       .eq('id', messageId)
+      .eq('account_id', accountId)
   }
 
   // Advance sequence if replied — mark sequence as won
@@ -71,6 +75,7 @@ export async function POST(req: Request) {
       .from('outreach_messages')
       .select('company_id')
       .eq('id', messageId)
+      .eq('account_id', accountId)
       .single()
 
     if (msg) {

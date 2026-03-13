@@ -4,39 +4,67 @@
  */
 console.log("DISCOVERY ROUTE HIT")
 import { NextRequest, NextResponse } from 'next/server'
+import { getAccountContext } from '@/lib/auth/server'
+import { requireAnyRole } from '@/lib/auth/permissions'
 import { getAllJobs, getJobsByStatus } from '@/lib/discovery/job-runner'
 import { mockDiscoveryJobs }          from '@/lib/mock/system-health'
-import { supabaseAdmin }              from '@/lib/supabase/server'
+import { getUserSupabaseClient }      from '@/lib/supabase/user-server'
 import type { JobStatus }             from '@/lib/discovery/types'
 
 const VALID_STATUSES = new Set<JobStatus>(['pending', 'running', 'completed', 'failed'])
 
 export async function GET(request: NextRequest) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   const { searchParams } = new URL(request.url)
   const statusParam = searchParams.get('status') as JobStatus | null
   const limitParam  = parseInt(searchParams.get('limit') ?? '50', 10)
 
-  // Merge real in-memory jobs with mock seed data
-  const liveJobs = statusParam && VALID_STATUSES.has(statusParam)
-    ? getJobsByStatus(statusParam)
-    : getAllJobs()
+  let query = supabase
+    .from('discovery_jobs')
+    .select('*', { count: 'exact' })
+    .eq('account_id', ctx.accountId)
+    .order('created_at', { ascending: false })
+    .limit(limitParam)
 
-  // Prepend mock jobs when the in-memory store is empty (cold start)
-  const jobs = liveJobs.length > 0
-    ? liveJobs
-    : mockDiscoveryJobs
+  if (statusParam && VALID_STATUSES.has(statusParam)) {
+    query = query.eq('status', statusParam)
+  }
 
-  const filtered = statusParam && VALID_STATUSES.has(statusParam)
-    ? jobs.filter((j) => j.status === statusParam)
-    : jobs
+  const { data, error, count } = await query
+  if (error) {
+    const liveJobs = statusParam && VALID_STATUSES.has(statusParam)
+      ? getJobsByStatus(statusParam)
+      : getAllJobs()
+    const jobs = liveJobs.length > 0 ? liveJobs : mockDiscoveryJobs
+    const filtered = statusParam && VALID_STATUSES.has(statusParam)
+      ? jobs.filter((j) => j.status === statusParam)
+      : jobs
+
+    return NextResponse.json({
+      jobs: filtered.slice(0, limitParam),
+      total: filtered.length,
+    })
+  }
 
   return NextResponse.json({
-    jobs: filtered.slice(0, limitParam),
-    total: filtered.length,
+    jobs: data ?? [],
+    total: count ?? (data?.length ?? 0),
   })
 }
 
 export async function POST(request: NextRequest) {
+  const ctx = await getAccountContext()
+  if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    requireAnyRole(ctx, ['admin'])
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  const supabase = getUserSupabaseClient(ctx.accessToken)
+
   let body: unknown
   try {
     body = await request.json()
@@ -51,9 +79,10 @@ export async function POST(request: NextRequest) {
   }
 
   // Persist to Supabase and return the created row
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('discovery_jobs')
     .insert({
+      account_id:   ctx.accountId,
       source:      source      ?? 'apify',
       niche,
       city:        city        ?? null,

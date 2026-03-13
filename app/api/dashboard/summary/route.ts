@@ -1,17 +1,24 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/server'
+import { getAccountContext } from '@/lib/auth/server'
+import { getUserSupabaseClient } from '@/lib/supabase/user-server'
 
 export async function GET() {
   try {
+    const ctx = await getAccountContext()
+    if (!ctx) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const supabase = getUserSupabaseClient(ctx.accessToken)
+
     // KPI: total leads (companies count)
-    const { count: totalLeads } = await supabaseAdmin
+    const { count: totalLeads } = await supabase
       .from('companies')
       .select('id', { head: true, count: 'exact' })
+      .eq('account_id', ctx.accountId)
 
     // Recent prospects: latest 5 companies
-    const { data: recentProspects, error: recentError } = await supabaseAdmin
+    const { data: recentProspects, error: recentError } = await supabase
       .from('companies')
       .select('id,name,opportunity_score,opportunity_tier,city,state,created_at')
+      .eq('account_id', ctx.accountId)
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -20,9 +27,10 @@ export async function GET() {
     }
 
     // Activity feed: last 10 outreach messages
-    const { data: activityData, error: activityError } = await supabaseAdmin
+    const { data: activityData, error: activityError } = await supabase
       .from('outreach_messages')
       .select('id,company_id,offer,status,created_at')
+      .eq('account_id', ctx.accountId)
       .order('created_at', { ascending: false })
       .limit(10)
 
@@ -32,20 +40,23 @@ export async function GET() {
 
     // Outreach stats: emails sent in last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-    const { count: emailsSent } = await supabaseAdmin
+    const { count: emailsSent } = await supabase
       .from('outreach_messages')
       .select('id', { head: true, count: 'exact' })
+      .eq('account_id', ctx.accountId)
       .gte('created_at', thirtyDaysAgo)
 
     // active campaigns count
-    const { count: activeCampaignsCount } = await supabaseAdmin
+    const { count: activeCampaignsCount } = await supabase
       .from('campaigns')
       .select('id', { head: true, count: 'exact' })
+      .eq('account_id', ctx.accountId)
       .eq('status', 'active')
 
-    const { data: deals, error: dealsError } = await supabaseAdmin
+    const { data: deals, error: dealsError } = await supabase
       .from('deals')
       .select('value, stage')
+      .eq('account_id', ctx.accountId)
 
     if (dealsError) {
       throw dealsError
