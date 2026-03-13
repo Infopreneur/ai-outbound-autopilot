@@ -204,7 +204,7 @@ function ComposeInner() {
   return (
     <div className="max-w-[1000px] space-y-5">
       {/* Back */}
-      <Link href="/outreach" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-200 transition-colors">
+      <Link href="/outreach" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
         <ArrowLeft className="w-3.5 h-3.5" /> Back to Outreach
       </Link>
 
@@ -213,8 +213,8 @@ function ComposeInner() {
           <Sparkles className="w-4 h-4 text-indigo-400" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-white">Compose Outreach</h1>
-          <p className="text-xs text-slate-500">Select a company → choose offer + angle → generate → approve</p>
+          <h1 className="text-lg font-bold text-[var(--text-primary)]">Compose Outreach</h1>
+          <p className="text-xs text-[var(--text-muted)]">Select a company → choose offer + angle → generate → approve</p>
         </div>
       </div>
 
@@ -224,15 +224,15 @@ function ComposeInner() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Company selector */}
-          <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-4">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">1. Select Company</div>
+          <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">1. Select Company</div>
 
             {selected ? (
-              <div className="flex items-center gap-3 p-3 bg-[#1a1a30] border border-[#252540] rounded-lg">
+              <div className="flex items-center gap-3 rounded-xl border border-[var(--input-border)] bg-[var(--input-bg-muted)] p-3">
                 <Avatar name={selected.name} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-white truncate">{selected.name}</div>
-                  <div className="text-xs text-slate-500 truncate">
+                  <div className="truncate text-sm font-semibold text-[var(--text-primary)]">{selected.name}</div>
+                  <div className="truncate text-xs text-[var(--text-muted)]">
                     {[selected.niche, selected.city].filter(Boolean).join(' · ')}
                   </div>
                 </div>
@@ -241,7 +241,7 @@ function ComposeInner() {
                     {selected.opportunity_tier}
                   </span>
                 )}
-                <button onClick={() => { setSelected(null); setMessage(null) }} className="text-slate-600 hover:text-slate-400">
+                <button onClick={() => { setSelected(null); setMessage(null) }} className="text-[var(--text-subtle)] hover:text-[var(--text-primary)]">
                   ×
                 </button>
               </div>
@@ -253,12 +253,12 @@ function ComposeInner() {
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setDropdown(true) }}
                   onFocus={() => setDropdown(true)}
-                  className="w-full h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50"
+                  className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50"
                 />
                 {showDropdown && (search || companies.length > 0) && (
-                  <div className="absolute top-10 left-0 right-0 bg-[#111120] border border-[#252540] rounded-lg shadow-xl z-20 max-h-60 overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-10 z-20 max-h-60 overflow-y-auto rounded-xl border border-[var(--input-border)] bg-[var(--panel-bg)] shadow-xl">
                     {loadingComp && (
-                      <div className="flex items-center gap-2 px-3 py-2 text-xs text-slate-500">
+                      <div className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--text-muted)]">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…
                       </div>
                     )}
@@ -266,12 +266,12 @@ function ComposeInner() {
                       <button
                         key={c.id}
                         onClick={() => selectCompany(c)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 text-left"
+                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-[var(--hover-bg)]"
                       >
                         <Avatar name={c.name} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm text-slate-200 truncate">{c.name}</div>
-                          <div className="text-xs text-slate-600 truncate">{[c.niche, c.city].filter(Boolean).join(' · ')}</div>
+                          <div className="truncate text-sm text-[var(--text-primary)]">{c.name}</div>
+                          <div className="truncate text-xs text-[var(--text-subtle)]">{[c.niche, c.city].filter(Boolean).join(' · ')}</div>
                         </div>
                         {c.opportunity_tier && (
                           <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border', TIER_COLORS[c.opportunity_tier])}>
@@ -281,7 +281,7 @@ function ComposeInner() {
                       </button>
                     ))}
                     {!loadingComp && companies.length === 0 && search && (
-                      <div className="px-3 py-3 text-xs text-slate-600">No companies found.</div>
+                      <div className="px-3 py-3 text-xs text-[var(--text-subtle)]">No companies found.</div>
                     )}
                   </div>
                 )}
@@ -292,25 +292,25 @@ function ComposeInner() {
             {selected && (
               <div className="mt-3 grid grid-cols-2 gap-1.5">
                 {selected.rating !== null && (
-                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                  <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     <span className="text-amber-400">{selected.rating.toFixed(1)}</span>
-                    {selected.review_count !== null && <span className="text-slate-600">({selected.review_count})</span>}
+                    {selected.review_count !== null && <span className="text-[var(--text-subtle)]">({selected.review_count})</span>}
                   </div>
                 )}
                 {selected.website
                   ? <div className="flex items-center gap-1 text-xs text-emerald-500"><Globe className="w-3 h-3" /> Has website</div>
                   : <div className="flex items-center gap-1 text-xs text-red-500"><Globe className="w-3 h-3" /> No website</div>
                 }
-                {selected.phone && <div className="flex items-center gap-1 text-xs text-slate-500"><Phone className="w-3 h-3" /> {selected.phone}</div>}
-                {selected.city && <div className="flex items-center gap-1 text-xs text-slate-500"><MapPin className="w-3 h-3" /> {selected.city}</div>}
+                {selected.phone && <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]"><Phone className="w-3 h-3" /> {selected.phone}</div>}
+                {selected.city && <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]"><MapPin className="w-3 h-3" /> {selected.city}</div>}
               </div>
             )}
           </div>
 
           {/* Offer selector */}
-          <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-4">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">2. Choose Offer</div>
+          <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">2. Choose Offer</div>
             <div className="space-y-2">
               {OFFERS.map((o) => {
                 const rec = selected?.offer_fit_breakdown?.find((r) => r.offerId === o.id)
@@ -320,22 +320,22 @@ function ComposeInner() {
                     onClick={() => setOfferId(o.id)}
                     className={cn(
                       'w-full text-left p-3 rounded-lg border transition-all',
-                      offerId === o.id ? `${o.bg} ${o.border}` : 'bg-[#1a1a30] border-[#252540] hover:border-[#353560]',
+                      offerId === o.id ? `${o.bg} ${o.border}` : 'bg-[var(--input-bg-muted)] border-[var(--input-border)] hover:border-indigo-400/30',
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={offerId === o.id ? o.color : 'text-slate-500'}>{o.icon}</span>
-                        <span className={cn('text-xs font-semibold', offerId === o.id ? o.color : 'text-slate-400')}>{o.name}</span>
+                        <span className={offerId === o.id ? o.color : 'text-[var(--text-muted)]'}>{o.icon}</span>
+                        <span className={cn('text-xs font-semibold', offerId === o.id ? o.color : 'text-[var(--text-secondary)]')}>{o.name}</span>
                       </div>
                       {rec && (
-                        <span className={cn('text-[10px] font-bold', offerId === o.id ? o.color : 'text-slate-600')}>
+                        <span className={cn('text-[10px] font-bold', offerId === o.id ? o.color : 'text-[var(--text-subtle)]')}>
                           {rec.fitScore} fit
                         </span>
                       )}
                     </div>
                     {offerId === o.id && rec && (
-                      <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">{rec.primarySignal}</p>
+                      <p className="mt-1 text-[10px] leading-relaxed text-[var(--text-muted)]">{rec.primarySignal}</p>
                     )}
                   </button>
                 )
@@ -344,9 +344,9 @@ function ComposeInner() {
           </div>
 
           {/* Angle + Channel */}
-          <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-4 space-y-4">
+          <div className="space-y-4 rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
             <div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">3. Message Angle</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">3. Message Angle</div>
               <div className="space-y-1.5">
                 {ANGLES.map((a) => (
                   <button
@@ -356,18 +356,18 @@ function ComposeInner() {
                       'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all',
                       angle === a.id
                         ? 'bg-indigo-600/15 border-indigo-500/30 text-indigo-300'
-                        : 'bg-[#1a1a30] border-[#252540] text-slate-400 hover:border-[#353560]',
+                        : 'bg-[var(--input-bg-muted)] border-[var(--input-border)] text-[var(--text-secondary)] hover:border-indigo-400/30',
                     )}
                   >
                     <span className="font-semibold">{a.label}</span>
-                    <span className="text-slate-600 ml-2">{a.desc}</span>
+                    <span className="ml-2 text-[var(--text-subtle)]">{a.desc}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">4. Channel</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">4. Channel</div>
               <div className="flex gap-2">
                 {CHANNELS.map((ch) => (
                   <button
@@ -377,7 +377,7 @@ function ComposeInner() {
                       'flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg border text-xs font-medium transition-all',
                       channel === ch.id
                         ? 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300'
-                        : 'bg-[#1a1a30] border-[#252540] text-slate-500 hover:border-[#353560]',
+                        : 'bg-[var(--input-bg-muted)] border-[var(--input-border)] text-[var(--text-secondary)] hover:border-indigo-400/30',
                     )}
                   >
                     {ch.icon} {ch.label}
@@ -405,17 +405,17 @@ function ComposeInner() {
         {/* ── Right panel: generated message ────────────────────────────── */}
         <div className="lg:col-span-3">
           {!selected && !message && (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-600 bg-[#111120] border border-[#1e1e38] rounded-xl p-10">
+            <div className="flex min-h-[300px] h-full flex-col items-center justify-center rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-10 text-[var(--text-subtle)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
               <Sparkles className="w-8 h-8 mb-3 opacity-30" />
               <p className="text-sm">Select a company to get started</p>
             </div>
           )}
 
           {selected && !message && !generating && !genError && (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-600 bg-[#111120] border border-[#1e1e38] rounded-xl p-10">
+            <div className="flex min-h-[300px] h-full flex-col items-center justify-center rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-10 text-[var(--text-subtle)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
               <Sparkles className="w-8 h-8 mb-3 opacity-30" />
               <p className="text-sm mb-1">Ready to generate</p>
-              <p className="text-xs text-slate-700">Configure your offer + angle, then click Generate</p>
+              <p className="text-xs text-[var(--text-subtle)]">Configure your offer + angle, then click Generate</p>
               {offerFitRec && (
                 <div className="mt-4 max-w-[280px] text-center">
                   <p className="text-xs text-indigo-400 italic">"{offerFitRec.headline}"</p>
@@ -425,34 +425,34 @@ function ComposeInner() {
           )}
 
           {generating && (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-500 bg-[#111120] border border-[#1e1e38] rounded-xl p-10">
+            <div className="flex min-h-[300px] h-full flex-col items-center justify-center rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-10 text-[var(--text-muted)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
               <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-400" />
               <p className="text-sm">Claude is writing your message…</p>
             </div>
           )}
 
           {genError && (
-            <div className="bg-[#111120] border border-red-500/20 rounded-xl p-6 text-center text-red-400 text-sm">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center text-sm text-red-400">
               {genError}
             </div>
           )}
 
           {message && !generating && (
-            <div className="bg-[#111120] border border-[#1e1e38] rounded-xl overflow-hidden">
+            <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e1e38]">
+              <div className="flex items-center justify-between border-b border-[var(--panel-border)] px-5 py-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span className="text-sm font-semibold text-white">Generated Message</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">Generated Message</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 capitalize">
                     {message.angle} angle · {message.channel}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={copy} title="Copy" className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5">
+                  <button onClick={copy} title="Copy" className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={generate} title="Regenerate" className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5">
+                  <button onClick={generate} title="Regenerate" className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]">
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -462,19 +462,19 @@ function ComposeInner() {
               <div className="p-5 space-y-4">
                 {channel === 'email' && message.subjectLine && (
                   <div>
-                    <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Subject Line</div>
-                    <div className="text-sm font-semibold text-white">{message.subjectLine}</div>
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">Subject Line</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">{message.subjectLine}</div>
                   </div>
                 )}
 
                 <div>
-                  <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Message</div>
-                  <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">{message.messageBody}</div>
+                  <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">Message</div>
+                  <div className="whitespace-pre-line text-sm leading-relaxed text-[var(--text-secondary)]">{message.messageBody}</div>
                 </div>
 
                 {message.cta && (
-                  <div className="pt-3 border-t border-[#1e1e38]">
-                    <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">CTA</div>
+                  <div className="border-t border-[var(--panel-border)] pt-3">
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-subtle)]">CTA</div>
                     <div className="text-sm text-indigo-300 italic">{message.cta}</div>
                   </div>
                 )}
@@ -482,11 +482,11 @@ function ComposeInner() {
 
               {/* Actions */}
               {saved ? (
-                <div className="px-5 py-4 border-t border-[#1e1e38] flex items-center gap-2 text-emerald-400 text-sm">
+                <div className="flex items-center gap-2 border-t border-[var(--panel-border)] px-5 py-4 text-sm text-emerald-400">
                   <CheckCircle2 className="w-4 h-4" /> Saved successfully
                 </div>
               ) : (
-                <div className="px-5 py-4 border-t border-[#1e1e38] flex items-center gap-3">
+                <div className="flex items-center gap-3 border-t border-[var(--panel-border)] px-5 py-4">
                   <Button variant="secondary" size="sm" onClick={() => save('draft')} disabled={saving}>
                     Save as Draft
                   </Button>
@@ -496,7 +496,7 @@ function ComposeInner() {
                       : <><Send className="w-3.5 h-3.5" /> Approve for Sending</>
                     }
                   </Button>
-                  <span className="text-xs text-slate-600 ml-auto">
+                  <span className="ml-auto text-xs text-[var(--text-subtle)]">
                     Approved messages are queued for n8n delivery
                   </span>
                 </div>

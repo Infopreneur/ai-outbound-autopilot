@@ -162,15 +162,15 @@ function DiscoveryPanel({ onJobComplete }: { onJobComplete: () => void }) {
   function reset() { setRunState('idle'); setResult(null); setError(null); setProgress(0) }
 
   return (
-    <div className="bg-[#111120] border border-[#1e1e38] rounded-xl overflow-hidden">
-      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-colors">
+    <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_96%,white_4%)_0%,var(--panel-bg)_100%)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between px-5 py-4 transition-colors hover:bg-[var(--hover-bg)]">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center">
             <Zap className="w-3.5 h-3.5 text-indigo-400" />
           </div>
           <div className="text-left">
-            <div className="text-sm font-semibold text-white">Lead Discovery</div>
-            <div className="text-xs text-slate-500">Scrape, score, and save leads automatically</div>
+            <div className="text-sm font-semibold text-[var(--text-primary)]">Lead Discovery</div>
+            <div className="text-xs text-[var(--text-muted)]">Scrape, score, and save leads automatically</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -181,22 +181,22 @@ function DiscoveryPanel({ onJobComplete }: { onJobComplete: () => void }) {
               {result.insertedCount} new · {result.updatedCount} updated
             </span>
           )}
-          {open ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+          {open ? <ChevronUp className="h-4 w-4 text-[var(--text-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--text-muted)]" />}
         </div>
       </button>
 
       {open && (
-        <div className="border-t border-[#1e1e38] p-5 space-y-4">
+        <div className="space-y-4 border-t border-[var(--panel-border)] p-5">
           {/* Source */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 mb-2 block uppercase tracking-wide">Source</label>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Source</label>
             <div className="flex gap-2 flex-wrap">
               {SOURCES.map((s) => (
                 <button key={s.value} onClick={() => setSource(s.value)}
-                  className={cn('flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all',
-                    source === s.value ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' : 'text-slate-400 border-[#252540] bg-[#1a1a30] hover:text-slate-200 hover:border-[#32325a]')}>
+                  className={cn('flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all',
+                    source === s.value ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' : 'border-[var(--input-border)] bg-[var(--input-bg-muted)] text-[var(--text-secondary)] hover:border-indigo-400/30 hover:text-[var(--text-primary)]')}>
                   <span>{s.icon}</span>{s.label}
-                  {s.badge === 'soon' && <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-700 text-slate-400 uppercase">Soon</span>}
+                  {s.badge === 'soon' && <span className="rounded bg-[var(--hover-bg)] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[var(--text-subtle)]">Soon</span>}
                 </button>
               ))}
             </div>
@@ -205,31 +205,31 @@ function DiscoveryPanel({ onJobComplete }: { onJobComplete: () => void }) {
           {/* Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div className="sm:col-span-2">
-              <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">Niche / Business Type <span className="text-red-400">*</span></label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Niche / Business Type <span className="text-red-400">*</span></label>
               <input type="text" placeholder="e.g. Roofing Contractors, HVAC, Dentists…" value={niche} onChange={(e) => setNiche(e.target.value)}
-                className="w-full h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
+                className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">City</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">City</label>
               <input type="text" placeholder="Phoenix" value={city} onChange={(e) => setCity(e.target.value)}
-                className="w-full h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50" />
+                className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">State</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">State</label>
               <input type="text" placeholder="AZ" maxLength={2} value={stateVal} onChange={(e) => setStateVal(e.target.value.toUpperCase())}
-                className="w-full h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50 uppercase" />
+                className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm uppercase text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50" />
             </div>
           </div>
 
           {/* Max results + run */}
           <div className="flex items-end gap-3 flex-wrap">
             <div>
-              <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">Max Results</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Max Results</label>
               <div className="flex gap-1">
                 {MAX_OPTIONS.map((n) => (
                   <button key={n} onClick={() => setMax(n)}
-                    className={cn('px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                      maxResults === n ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-500 bg-[#1a1a30] border border-[#252540] hover:text-slate-300')}>
+                    className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+                      maxResults === n ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'border border-[var(--input-border)] bg-[var(--input-bg-muted)] text-[var(--text-muted)] hover:text-[var(--text-primary)]')}>
                     {n}
                   </button>
                 ))}
@@ -249,7 +249,7 @@ function DiscoveryPanel({ onJobComplete }: { onJobComplete: () => void }) {
           {runState === 'running' && (
             <div className="space-y-1.5">
               <Progress value={progress} barClassName="bg-indigo-500 transition-all duration-300" />
-              <div className="flex items-center justify-between text-[10px] text-slate-600">
+              <div className="flex items-center justify-between text-[10px] text-[var(--text-subtle)]">
                 <span>Scraping {niche} in {[city, stateVal].filter(Boolean).join(', ') || 'all locations'}…</span>
                 <span>{Math.round(progress)}%</span>
               </div>
@@ -282,7 +282,7 @@ function DiscoveryPanel({ onJobComplete }: { onJobComplete: () => void }) {
               {result.topScored && result.topScored.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
                   {result.topScored.map((t, i) => (
-                    <span key={i} className="text-[10px] bg-[#1a1a30] border border-[#252540] rounded px-2 py-1 text-slate-400">
+                    <span key={i} className="rounded border border-[var(--input-border)] bg-[var(--input-bg-muted)] px-2 py-1 text-[10px] text-[var(--text-secondary)]">
                       {t.name}{t.city ? ` · ${t.city}` : ''}{t.rating ? ` · ⭐${t.rating}` : ''}
                     </span>
                   ))}
@@ -392,14 +392,14 @@ function ProspectEditModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#111120] border border-[#1e1e38] rounded-xl w-full max-w-lg shadow-2xl">
+      <div className="relative w-full max-w-lg rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-[#1e1e38]">
+        <div className="flex items-start justify-between border-b border-[var(--panel-border)] p-5">
           <div>
-            <div className="text-sm font-bold text-white">{company.name}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{[company.city, company.state].filter(Boolean).join(', ') || company.website || 'No location'}</div>
+            <div className="text-sm font-bold text-[var(--text-primary)]">{company.name}</div>
+            <div className="mt-0.5 text-xs text-[var(--text-muted)]">{[company.city, company.state].filter(Boolean).join(', ') || company.website || 'No location'}</div>
           </div>
-          <button onClick={onClose} className="text-slate-600 hover:text-slate-300 transition-colors">
+          <button onClick={onClose} className="text-[var(--text-subtle)] transition-colors hover:text-[var(--text-primary)]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -408,19 +408,19 @@ function ProspectEditModal({
         <div className="p-5 space-y-4">
           {/* Strategy */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 mb-2 block uppercase tracking-wide">Strategy</label>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Strategy</label>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => setStrategy('')}
-                className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                  !strategy ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-500 bg-[#1a1a30] border border-[#252540] hover:text-slate-300')}>
+                className={cn('rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                  !strategy ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'border border-[var(--input-border)] bg-[var(--input-bg-muted)] text-[var(--text-muted)] hover:text-[var(--text-primary)]')}>
                 None
               </button>
               {STRATEGIES.map((s) => (
                 <button key={s} onClick={() => setStrategy(strategy === s ? '' : s)}
-                  className={cn('px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                  className={cn('rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
                     strategy === s
                       ? (STRATEGY_COLORS[s] ?? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30')
-                      : 'text-slate-500 bg-[#1a1a30] border border-[#252540] hover:text-slate-300')}>
+                      : 'border border-[var(--input-border)] bg-[var(--input-bg-muted)] text-[var(--text-muted)] hover:text-[var(--text-primary)]')}>
                   {s}
                 </button>
               ))}
@@ -429,28 +429,28 @@ function ProspectEditModal({
 
           {/* Source URL */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">Source URL</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Source URL</label>
             <input type="url" placeholder="https://facebook.com/ads/… or job posting link…"
               value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)}
-              className="w-full h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
+              className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
           </div>
 
           {/* Deep dive note */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 mb-1.5 block uppercase tracking-wide">Side Note / Hook</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Side Note / Hook</label>
             <textarea
               placeholder={`e.g. "Saw their 'Free Roof Inspection' Facebook ad — high spend signal"`}
               value={deepDiveNote} onChange={(e) => setDeepDiveNote(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2.5 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 resize-none" />
+              className="w-full resize-none rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-300">
+          <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
             <input
               type="checkbox"
               checked={convertOnSave}
               onChange={(e) => setConvertOnSave(e.target.checked)}
-              className="w-4 h-4 rounded border-[#2a2a4e] bg-[#1a1a2e] text-indigo-500 focus:ring-indigo-500"
+              className="h-4 w-4 rounded border-[var(--input-border)] bg-[var(--input-bg)] text-indigo-500 focus:ring-indigo-500"
             />
             Convert to deal on save
           </label>
@@ -463,7 +463,7 @@ function ProspectEditModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-[#1e1e38]">
+        <div className="flex items-center justify-between border-t border-[var(--panel-border)] p-5">
           <button
             onClick={handleConvert}
             disabled={converting || saving}
@@ -569,16 +569,16 @@ export default function ProspectingPage() {
   return (
     <div className="space-y-5 max-w-[1400px]">
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Total in DB',    value: loading ? '—' : total.toLocaleString(),            color: 'text-white' },
+          { label: 'Total in DB',    value: loading ? '—' : total.toLocaleString(),            color: 'text-[var(--text-primary)]' },
           { label: 'Hot Leads',      value: loading ? '—' : hotCount.toString(),               color: 'text-red-400' },
           { label: 'Avg Opp Score',  value: loading ? '—' : avgScore.toString(),               color: 'text-indigo-400' },
           { label: 'Converted',      value: loading ? '—' : convertedCount.toString(),         color: 'text-emerald-400' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-[#111120] border border-[#1e1e38] rounded-xl px-5 py-4">
+          <div key={stat.label} className="rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_95%,white_5%)_0%,var(--panel-bg)_100%)] px-5 py-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
             <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
+            <div className="mt-1 text-xs text-[var(--text-muted)]">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -591,9 +591,9 @@ export default function ProspectingPage() {
               className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
                 strategy === s
                   ? (STRATEGY_COLORS[s] ?? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30')
-                  : 'bg-[#111120] border-[#1e1e38] text-slate-400 hover:text-slate-200')}>
+                  : 'bg-[var(--panel-bg)] border-[var(--panel-border)] text-[var(--text-muted)] hover:text-[var(--text-primary)]')}>
               {s}
-              <span className="bg-white/10 rounded px-1 tabular-nums">{count}</span>
+              <span className="rounded bg-[var(--hover-bg)] px-1 tabular-nums">{count}</span>
             </button>
           ))}
         </div>
@@ -602,19 +602,19 @@ export default function ProspectingPage() {
       <DiscoveryPanel onJobComplete={loadCompanies} />
 
       {/* Search + filter bar */}
-      <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-4 space-y-3">
+      <div className="space-y-3 rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600" />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-subtle)]" />
             <input type="text" placeholder="Search name, city, or website…" value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-4 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
+              className="h-9 w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] pl-9 pr-4 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20" />
           </div>
 
           <select
             value={tier}
             onChange={(e) => setTier(e.target.value)}
-            className="h-9 min-w-[110px] px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="h-9 min-w-[110px] rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             <option value="">Tier</option>
             <option value="hot">Hot</option>
@@ -624,7 +624,7 @@ export default function ProspectingPage() {
           <select
             value={niche}
             onChange={(e) => setNiche(e.target.value)}
-            className="h-9 min-w-[140px] px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="h-9 min-w-[140px] rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             <option value="">Niche</option>
             {niches.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -632,7 +632,7 @@ export default function ProspectingPage() {
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            className="h-9 min-w-[125px] px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="h-9 min-w-[125px] rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             <option value="">Source</option>
             <option value="google-native">Google Native</option>
@@ -641,7 +641,7 @@ export default function ProspectingPage() {
           <select
             value={strategy}
             onChange={(e) => setStrategy(e.target.value)}
-            className="h-9 min-w-[140px] px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="h-9 min-w-[140px] rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             <option value="">Strategy</option>
             {STRATEGIES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -649,7 +649,7 @@ export default function ProspectingPage() {
           <select
             value={String(sortIdx)}
             onChange={(e) => setSortIdx(Number(e.target.value))}
-            className="h-9 min-w-[145px] px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="h-9 min-w-[145px] rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             {SORT_OPTIONS.map((s, i) => <option key={s.value} value={i}>{s.label}</option>)}
           </select>
@@ -661,47 +661,47 @@ export default function ProspectingPage() {
           <Button variant="secondary" size="sm" onClick={() => exportCSV(companies)}>
             <Download className="w-3.5 h-3.5" />Export CSV
           </Button>
-          <div className="ml-auto text-sm text-slate-500">
-            <span className="text-white font-semibold">{companies.length}</span> of <span className="text-slate-400">{total.toLocaleString()}</span>
+          <div className="ml-auto text-sm text-[var(--text-muted)]">
+            <span className="font-semibold text-[var(--text-primary)]">{companies.length}</span> of <span className="text-[var(--text-muted)]">{total.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
       {/* Companies table */}
-      <div className="bg-[#111120] border border-[#1e1e38] rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_96%,white_4%)_0%,var(--panel-bg)_100%)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-slate-500">
+          <div className="flex items-center justify-center py-20 text-[var(--text-muted)]">
             <Loader2 className="w-5 h-5 animate-spin mr-2" />Loading…
           </div>
         ) : companies.length === 0 ? (
-          <div className="text-center py-16 text-slate-600 text-sm">
+          <div className="py-16 text-center text-sm text-[var(--text-subtle)]">
             {total === 0
               ? 'No companies yet. Run a discovery job above to get started.'
               : 'No results match your filters.'}
           </div>
         ) : (
           <table className="w-full">
-            <thead className="border-b border-[#1e1e38]">
+            <thead className="border-b border-[var(--panel-border)]">
               <tr>
                 {['Business Name', 'Niche', 'Location', 'Rating', 'Score', 'Tier', 'Strategy', 'Side Note', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap text-[var(--text-muted)]">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#0f0f1e]">
+            <tbody className="divide-y divide-[var(--panel-border)]">
               {companies.map((c) => (
-                <tr key={c.id} className={cn('hover:bg-white/[0.015] transition-colors', c.converted_to_deal && 'opacity-50')}>
+                <tr key={c.id} className={cn('transition-colors hover:bg-[var(--hover-bg)]', c.converted_to_deal && 'opacity-50')}>
                   <td className="px-4 py-3 max-w-[200px]">
-                    <div className="text-sm font-semibold text-white truncate">{c.name}</div>
+                    <div className="truncate text-sm font-semibold text-[var(--text-primary)]">{c.name}</div>
                     {c.website && (
                       <a href={c.website} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-[10px] text-slate-600 hover:text-indigo-400 mt-0.5 truncate transition-colors">
+                        className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-[var(--text-subtle)] transition-colors hover:text-indigo-500">
                         <Globe className="w-2.5 h-2.5 flex-shrink-0" />
                         <span className="truncate">{c.website.replace(/^https?:\/\//, '')}</span>
                       </a>
                     )}
                     {c.phone && (
-                      <div className="flex items-center gap-1 text-[10px] text-slate-600 mt-0.5">
+                      <div className="mt-0.5 flex items-center gap-1 text-[10px] text-[var(--text-subtle)]">
                         <Phone className="w-2.5 h-2.5" />{c.phone}
                       </div>
                     )}
@@ -711,11 +711,11 @@ export default function ProspectingPage() {
                   </td>
                   <td className="px-4 py-3">
                     {(c.city || c.state) ? (
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <MapPin className="w-3 h-3 text-slate-600" />
+                      <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                        <MapPin className="h-3 w-3 text-[var(--text-subtle)]" />
                         {[c.city, c.state].filter(Boolean).join(', ')}
                       </div>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.rating !== null ? (
@@ -723,10 +723,10 @@ export default function ProspectingPage() {
                         <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                         <span className="text-amber-400 font-semibold">{c.rating.toFixed(1)}</span>
                         {c.review_count !== null && (
-                          <span className="text-slate-600 text-[10px]">· {c.review_count.toLocaleString()}</span>
+                          <span className="text-[10px] text-[var(--text-subtle)]">· {c.review_count.toLocaleString()}</span>
                         )}
                       </div>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.opportunity_score !== null ? (
@@ -736,14 +736,14 @@ export default function ProspectingPage() {
                       >
                         {c.opportunity_score}
                       </span>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.opportunity_tier ? (
                       <span className={cn('px-2 py-0.5 rounded-md text-[10px] font-bold uppercase', TIER_COLORS[c.opportunity_tier])}>
                         {c.opportunity_tier}
                       </span>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.strategy ? (
@@ -751,14 +751,14 @@ export default function ProspectingPage() {
                         STRATEGY_COLORS[c.strategy] ?? 'bg-slate-500/20 text-slate-400 border border-slate-500/30')}>
                         {c.strategy}
                       </span>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3 max-w-[180px]">
                     {c.deep_dive_note ? (
-                      <span className="text-[10px] text-slate-500 line-clamp-2" title={c.deep_dive_note}>
+                      <span className="line-clamp-2 text-[10px] text-[var(--text-muted)]" title={c.deep_dive_note}>
                         {c.deep_dive_note}
                       </span>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {c.converted_to_deal ? (
@@ -768,7 +768,7 @@ export default function ProspectingPage() {
                     ) : (
                       <div className="flex items-center gap-1.5">
                         <button onClick={() => setEditCompany(c)}
-                          className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-[#1a1a30] border border-[#252540] text-slate-400 hover:text-slate-200 hover:border-[#32325a] transition-colors">
+                          className="flex items-center gap-1 rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1 text-[10px] font-medium text-[var(--text-muted)] transition-colors hover:border-indigo-400/30 hover:text-[var(--text-primary)]">
                           <Edit2 className="w-2.5 h-2.5" />Edit
                         </button>
                         <button onClick={async () => {

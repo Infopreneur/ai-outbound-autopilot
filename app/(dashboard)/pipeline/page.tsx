@@ -90,15 +90,15 @@ export default async function PipelinePage({
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-[#111120] border border-[#1e1e38] rounded-xl px-5 py-4 flex items-center gap-3"
+            className="flex items-center gap-3 rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_95%,white_5%)_0%,var(--panel-bg)_100%)] px-5 py-4 shadow-[0_18px_38px_rgba(15,23,42,0.05)]"
           >
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${stat.color}`}>
               {stat.icon}
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-xs text-slate-500">{stat.label}</div>
-              <div className="text-[10px] text-slate-700 mt-0.5">{stat.sub}</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">{stat.value}</div>
+              <div className="text-xs text-[var(--text-muted)]">{stat.label}</div>
+              <div className="mt-0.5 text-[10px] text-[var(--text-subtle)]">{stat.sub}</div>
             </div>
           </div>
         ))}
@@ -107,8 +107,8 @@ export default async function PipelinePage({
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-white">Deal Pipeline</h2>
-          <p className="text-xs text-slate-500 mt-0.5">{active.length} active deals · {deals.length} total</p>
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Deal Pipeline</h2>
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">{active.length} active deals · {deals.length} total</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm">
@@ -128,12 +128,12 @@ export default async function PipelinePage({
       {/* Bottom: Deal insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* At-risk deals */}
-        <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-lg bg-amber-500/15 flex items-center justify-center">
               <Target className="w-3.5 h-3.5 text-amber-400" />
             </div>
-            <h3 className="text-sm font-semibold text-white">At-Risk Deals</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">At-Risk Deals</h3>
           </div>
           <div className="space-y-3">
             {deals
@@ -142,25 +142,25 @@ export default async function PipelinePage({
               .map((deal) => (
                 <div key={deal.id} className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-slate-300">{deal.name}</div>
-                    <div className="text-[11px] text-slate-600">{deal.daysInStage}d in stage</div>
+                    <div className="text-xs font-semibold text-[var(--text-secondary)]">{deal.name}</div>
+                    <div className="text-[11px] text-[var(--text-subtle)]">{deal.daysInStage}d in stage</div>
                   </div>
                   <div className="text-sm font-bold text-amber-400">{formatCurrency(deal.value)}</div>
                 </div>
               ))}
             {deals.filter((d) => d.daysInStage > 7 && !['closed_won', 'closed_lost'].includes(d.stage)).length === 0 && (
-              <div className="text-xs text-slate-600 text-center py-3">No at-risk deals</div>
+              <div className="py-3 text-center text-xs text-[var(--text-subtle)]">No at-risk deals</div>
             )}
           </div>
         </div>
 
         {/* AI Forecast */}
-        <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-lg bg-indigo-500/15 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             </div>
-            <h3 className="text-sm font-semibold text-white">AI Forecast</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">AI Forecast</h3>
           </div>
           <div className="space-y-3">
             {[
@@ -169,11 +169,11 @@ export default async function PipelinePage({
               { label: 'Pipeline',  value: formatCurrency(pipeVal), color: 'text-slate-300' },
             ].map((f) => (
               <div key={f.label} className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">{f.label}</span>
+                <span className="text-xs text-[var(--text-muted)]">{f.label}</span>
                 <span className={`text-sm font-bold ${f.color}`}>{f.value}</span>
               </div>
             ))}
-            <div className="mt-2 pt-3 border-t border-[#1e1e38] text-xs text-slate-600">
+            <div className="mt-2 border-t border-[var(--panel-border)] pt-3 text-xs text-[var(--text-subtle)]">
               <Sparkles className="w-3 h-3 inline mr-1 text-indigo-500" />
               Based on historical win rates and deal velocity
             </div>
@@ -181,12 +181,12 @@ export default async function PipelinePage({
         </div>
 
         {/* Upcoming close dates */}
-        <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
+        <div className="rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 rounded-lg bg-blue-500/15 flex items-center justify-center">
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
             </div>
-            <h3 className="text-sm font-semibold text-white">Closing Soon</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Closing Soon</h3>
           </div>
           <div className="space-y-3">
             {deals
@@ -196,12 +196,12 @@ export default async function PipelinePage({
               .map((deal) => (
                 <div key={deal.id} className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold text-slate-300 truncate max-w-[160px]">{deal.name}</div>
-                    <div className="text-[11px] text-slate-600">
+                    <div className="max-w-[160px] truncate text-xs font-semibold text-[var(--text-secondary)]">{deal.name}</div>
+                    <div className="text-[11px] text-[var(--text-subtle)]">
                       {new Date(deal.closeDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-300">{formatCurrency(deal.value)}</span>
+                  <span className="text-xs font-bold text-[var(--text-secondary)]">{formatCurrency(deal.value)}</span>
                 </div>
               ))}
           </div>

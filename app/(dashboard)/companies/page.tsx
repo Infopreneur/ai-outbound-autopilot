@@ -123,40 +123,40 @@ export default function CompaniesPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Total Companies', value: loading ? '—' : total.toLocaleString(),     color: 'text-white' },
+          { label: 'Total Companies', value: loading ? '—' : total.toLocaleString(),     color: 'text-[var(--text-primary)]' },
           { label: 'Hot Leads',       value: loading ? '—' : hotCount.toString(),         color: 'text-red-400' },
           { label: 'Avg Opp Score',   value: loading ? '—' : avgScore.toString(),          color: 'text-indigo-400' },
           { label: 'Scored',          value: loading ? '—' : scored.toString(),            color: 'text-emerald-400' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-[#111120] border border-[#1e1e38] rounded-xl px-5 py-4">
+          <div key={stat.label} className="bg-[var(--panel-bg-muted)] border border-[var(--panel-border)] rounded-xl px-5 py-4">
             <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
+            <div className="text-xs text-[var(--text-muted)] mt-1">{stat.label}</div>
           </div>
         ))}
       </div>
 
       {/* Toolbar */}
-      <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-4 space-y-3">
+      <div className="bg-[var(--panel-bg-muted)] border border-[var(--panel-border)] rounded-xl p-4 space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-subtle)]" />
             <input
               type="text"
               placeholder="Search companies, cities…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-4 bg-[#1a1a30] border border-[#252540] rounded-lg text-sm text-slate-300 placeholder-slate-700 focus:outline-none focus:border-indigo-500/50"
+              className="w-full h-9 pl-9 pr-4 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50"
             />
           </div>
 
           {/* Sort */}
           <div className="flex items-center gap-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-[var(--text-subtle)]" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-9 px-3 bg-[#1a1a30] border border-[#252540] rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50 cursor-pointer"
+              className="h-9 px-3 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-xs text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50 cursor-pointer"
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -165,17 +165,17 @@ export default function CompaniesPage() {
           </div>
 
           {/* View toggle */}
-          <div className="flex items-center gap-1 bg-[#1a1a30] border border-[#252540] rounded-lg p-1">
-            <button onClick={() => setView('grid')} className={cn('px-3 py-1 rounded-md text-xs font-medium transition-colors', view === 'grid' ? 'bg-indigo-600/30 text-indigo-400' : 'text-slate-500 hover:text-slate-300')}>
+          <div className="flex items-center gap-1 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg p-1">
+            <button onClick={() => setView('grid')} className={cn('px-3 py-1 rounded-md text-xs font-medium transition-colors', view === 'grid' ? 'bg-indigo-600/30 text-indigo-400' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]')}>
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
-            <button onClick={() => setView('list')} className={cn('px-3 py-1 rounded-md text-xs font-medium transition-colors', view === 'list' ? 'bg-indigo-600/30 text-indigo-400' : 'text-slate-500 hover:text-slate-300')}>
+            <button onClick={() => setView('list')} className={cn('px-3 py-1 rounded-md text-xs font-medium transition-colors', view === 'list' ? 'bg-indigo-600/30 text-indigo-400' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]')}>
               <List className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="text-sm text-slate-500">
-            <span className="text-white font-semibold">{total.toLocaleString()}</span> companies
+          <div className="text-sm text-[var(--text-muted)]">
+            <span className="text-[var(--text-primary)] font-semibold">{total.toLocaleString()}</span> companies
           </div>
         </div>
 
@@ -190,14 +190,14 @@ export default function CompaniesPage() {
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize',
                 tier === t
                   ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                  : 'text-slate-500 hover:text-slate-300 bg-[#1a1a30] border border-[#252540]',
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] bg-[var(--input-bg)] border border-[var(--input-border)]',
               )}
             >
               {t || 'All tiers'}
             </button>
           ))}
 
-          <div className="w-px h-4 bg-[#252540]" />
+          <div className="w-px h-4 bg-[var(--input-border)]" />
 
           {/* Source */}
           {['', 'google-native', 'apify'].map((s) => (
@@ -208,7 +208,7 @@ export default function CompaniesPage() {
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                 source === s
                   ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                  : 'text-slate-500 hover:text-slate-300 bg-[#1a1a30] border border-[#252540]',
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] bg-[var(--input-bg)] border border-[var(--input-border)]',
               )}
             >
               {s === '' ? 'All sources' : s === 'google-native' ? 'Google' : 'Apify'}
@@ -217,7 +217,7 @@ export default function CompaniesPage() {
 
           {niches.length > 0 && (
             <>
-              <div className="w-px h-4 bg-[#252540]" />
+              <div className="w-px h-4 bg-[var(--input-border)]" />
               {[...niches].slice(0, 8).map((n) => (
                 <button
                   key={n}
@@ -226,7 +226,7 @@ export default function CompaniesPage() {
                     'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                     niche === n
                       ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30'
-                      : 'text-slate-500 hover:text-slate-300 bg-[#1a1a30] border border-[#252540]',
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] bg-[var(--input-bg)] border border-[var(--input-border)]',
                   )}
                 >
                   {n}
@@ -238,11 +238,11 @@ export default function CompaniesPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 text-slate-500">
+        <div className="flex items-center justify-center py-20 text-[var(--text-muted)]">
           <Loader2 className="w-5 h-5 animate-spin mr-2" />Loading companies…
         </div>
       ) : companies.length === 0 ? (
-        <div className="text-center py-20 text-slate-600 text-sm">
+        <div className="text-center py-20 text-[var(--text-subtle)] text-sm">
           {total === 0
             ? 'No companies yet. Run a discovery job from the Prospecting page.'
             : 'No results match your filters.'}
@@ -250,7 +250,10 @@ export default function CompaniesPage() {
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {companies.map((c) => (
-            <div key={c.id} className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5 hover:border-[#252548] hover:bg-[#13132a] transition-all duration-150 flex flex-col">
+            <div
+              key={c.id}
+              className="rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_95%,white_5%)_0%,var(--panel-bg)_100%)] p-5 shadow-[0_18px_38px_rgba(15,23,42,0.05)] transition-all duration-150 hover:-translate-y-0.5 hover:border-[color:color-mix(in_srgb,var(--panel-border)_70%,#6366f1_30%)]"
+            >
               <div className="flex items-start justify-between mb-4">
                 <Link href={`/companies/${c.id}`}>
                   <Avatar name={c.name} size="lg" />
@@ -263,41 +266,41 @@ export default function CompaniesPage() {
               </div>
 
               <div className="mb-3">
-                <Link href={`/companies/${c.id}`} className="text-sm font-bold text-white hover:text-indigo-300 transition-colors">
+                <Link href={`/companies/${c.id}`} className="text-sm font-bold text-[var(--text-primary)] hover:text-indigo-500 transition-colors">
                   {c.name}
                 </Link>
                 {c.website
-                  ? <div className="text-xs text-slate-500 mt-0.5 truncate">{c.website.replace(/^https?:\/\//, '')}</div>
+                  ? <div className="text-xs text-[var(--text-muted)] mt-0.5 truncate">{c.website.replace(/^https?:\/\//, '')}</div>
                   : <div className="text-xs text-red-500/70 mt-0.5">No website</div>
                 }
               </div>
 
               <div className="space-y-1.5 mb-4 flex-1">
                 {(c.city || c.state) && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                     <MapPin className="w-3 h-3" />{[c.city, c.state].filter(Boolean).join(', ')}
                   </div>
                 )}
                 {c.phone && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                     <Phone className="w-3 h-3" />{c.phone}
                   </div>
                 )}
                 {c.rating !== null && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     <span className="text-amber-400 font-semibold">{c.rating.toFixed(1)}</span>
-                    {c.review_count !== null && <span className="text-slate-600">· {c.review_count.toLocaleString()} reviews</span>}
+                    {c.review_count !== null && <span className="text-[var(--text-subtle)]">· {c.review_count.toLocaleString()} reviews</span>}
                   </div>
                 )}
                 {c.niche && (
-                  <div className="text-[10px] text-slate-600 truncate">{c.niche}</div>
+                  <div className="text-[10px] text-[var(--text-subtle)] truncate">{c.niche}</div>
                 )}
               </div>
 
               {c.opportunity_score !== null && (
                 <div title={c.opportunity_reason ?? undefined} className="mb-3">
-                  <div className="flex justify-between text-xs text-slate-500 mb-1">
+                  <div className="mb-1 flex justify-between text-xs text-[var(--text-muted)]">
                     <span>Opp Score</span>
                     <span className={cn('font-semibold', SCORE_COLOR(c.opportunity_score))}>{c.opportunity_score}</span>
                   </div>
@@ -309,7 +312,7 @@ export default function CompaniesPage() {
               )}
 
               {/* Action buttons */}
-              <div className="pt-3 border-t border-[#1e1e38] flex items-center gap-2 mt-auto">
+              <div className="mt-auto flex items-center gap-2 border-t border-[var(--panel-border)] pt-3">
                 <Link
                   href={`/outreach/compose?company=${c.id}`}
                   className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-colors"
@@ -319,7 +322,7 @@ export default function CompaniesPage() {
                 </Link>
                 <Link
                   href={`/companies/${c.id}`}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#1a1a30] border border-[#252540] text-slate-500 hover:text-slate-200 hover:border-[#353560] transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-muted)] transition-colors hover:border-indigo-400/30 hover:text-[var(--text-primary)]"
                   title="View company details"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -329,34 +332,34 @@ export default function CompaniesPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-[#111120] border border-[#1e1e38] rounded-xl overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_96%,white_4%)_0%,var(--panel-bg)_100%)] shadow-[0_18px_38px_rgba(15,23,42,0.05)]">
           <table className="w-full">
-            <thead className="border-b border-[#1e1e38]">
+            <thead className="border-b border-[var(--panel-border)]">
               <tr>
                 {['Company', 'Niche', 'Location', 'Rating', 'Reviews', 'Phone', 'Opp Score', 'Tier', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#14142a]">
+            <tbody className="divide-y divide-[var(--panel-border)]">
               {companies.map((c) => (
-                <tr key={c.id} className="hover:bg-white/[0.02] transition-colors">
+                <tr key={c.id} className="transition-colors hover:bg-[var(--hover-bg)]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar name={c.name} size="sm" />
                       <div>
-                        <Link href={`/companies/${c.id}`} className="text-sm font-medium text-slate-100 hover:text-indigo-300 transition-colors">
+                        <Link href={`/companies/${c.id}`} className="text-sm font-medium text-[var(--text-primary)] hover:text-indigo-500 transition-colors">
                           {c.name}
                         </Link>
                         {c.website
-                          ? <div className="text-xs text-slate-600 truncate max-w-[140px]">{c.website.replace(/^https?:\/\//, '')}</div>
+                          ? <div className="max-w-[140px] truncate text-xs text-[var(--text-subtle)]">{c.website.replace(/^https?:\/\//, '')}</div>
                           : <div className="text-xs text-red-500/60">No website</div>
                         }
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500 max-w-[120px] truncate">{c.niche ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-400 whitespace-nowrap">
+                  <td className="max-w-[120px] truncate px-4 py-3 text-xs text-[var(--text-muted)]">{c.niche ?? '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-[var(--text-secondary)]">
                     {[c.city, c.state].filter(Boolean).join(', ') || '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -365,23 +368,23 @@ export default function CompaniesPage() {
                         <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                         <span className="text-amber-400 font-semibold">{c.rating.toFixed(1)}</span>
                       </div>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-400 tabular-nums">
+                  <td className="px-4 py-3 text-sm text-[var(--text-secondary)] tabular-nums">
                     {c.review_count !== null ? c.review_count.toLocaleString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-400 whitespace-nowrap">{c.phone ?? '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-[var(--text-secondary)]">{c.phone ?? '—'}</td>
                   <td className="px-4 py-3" title={c.opportunity_reason ?? undefined}>
                     {c.opportunity_score !== null
                       ? <span className={cn('text-sm font-bold', SCORE_COLOR(c.opportunity_score))}>{c.opportunity_score}</span>
-                      : <span className="text-xs text-slate-700">—</span>}
+                      : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {c.opportunity_tier ? (
                       <span className={cn('px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border', TIER_COLORS[c.opportunity_tier])}>
                         {c.opportunity_tier}
                       </span>
-                    ) : <span className="text-xs text-slate-700">—</span>}
+                    ) : <span className="text-xs text-[var(--text-subtle)]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
@@ -412,21 +415,21 @@ export default function CompaniesPage() {
       {/* Pagination */}
       {pages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-[var(--text-muted)]">
             Page {page} of {pages} · {total.toLocaleString()} total
           </div>
           <div className="flex items-center gap-2">
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="px-4 py-1.5 rounded-lg text-xs bg-[#1a1a30] border border-[#252540] text-slate-400 disabled:opacity-30 hover:text-white disabled:cursor-not-allowed"
+              className="rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
             >
               Previous
             </button>
             <button
               disabled={page >= pages}
               onClick={() => setPage((p) => p + 1)}
-              className="px-4 py-1.5 rounded-lg text-xs bg-[#1a1a30] border border-[#252540] text-slate-400 disabled:opacity-30 hover:text-white disabled:cursor-not-allowed"
+              className="rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
             >
               Next
             </button>
