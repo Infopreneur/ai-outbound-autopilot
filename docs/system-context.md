@@ -227,13 +227,13 @@ ALTER TABLE companies
 | `/prospecting` | Run discovery jobs + view/search all companies from Supabase |
 | `/companies` | Company grid/list view with tier filter, real data from Supabase |
 | `/companies/[id]` | Individual company detail — currently uses mock data |
-| `/command-center` | Hub page |
+| `/command-center` | Hub page (now pulls real data from the backend) |
 | `/demo-studio` | AI demo context + message generation |
 | `/outreach` | Campaign management |
 | `/pipeline` | Sales pipeline |
 | `/system-health` | API usage + cost tracking |
 
-**Pages still using mock data:** `/companies/[id]`, `/pipeline`, `/outreach`, `/demo-studio`, `/command-center`
+**Pages still using mock data:** `/companies/[id]`, `/pipeline`, `/outreach`, `/demo-studio`
 
 ---
 

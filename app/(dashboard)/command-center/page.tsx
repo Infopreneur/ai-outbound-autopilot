@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Users,
   CalendarCheck,
@@ -16,7 +18,41 @@ import { KpiCard } from '@/components/kpi-card'
 import { LeadTable } from '@/components/lead-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { mockLeads, mockActivity, kpiData } from '@/lib/mock-data'
+import { useEffect, useState } from 'react'
+
+// types for API response
+interface Prospect {
+  id: string
+  name: string
+  opportunity_score: number | null
+  opportunity_tier: string | null
+  city: string | null
+  state: string | null
+  created_at: string
+}
+
+interface ActivityRecord {
+  id: string
+  company_id: string
+  offer: string
+  status: string
+  created_at: string
+  meta?: string
+}
+
+interface DashboardData {
+  kpis: {
+    totalLeads: number
+    meetingsBooked: number
+    activeCampaigns: number
+    pipelineValue: number
+  }
+  recentProspects: Prospect[]
+  activity: ActivityRecord[]
+  outreachStats: {
+    emailsSent: number
+  }
+}
 
 const kpiIcons = [
   <Users key="users" className="w-4 h-4" />,
@@ -44,11 +80,65 @@ const activityBg: Record<string, string> = {
 }
 
 export default function CommandCenterPage() {
+  const [data, setData] = useState<DashboardData | null>(null)
+
+  useEffect(() => {
+    fetch('/api/dashboard/summary')
+      .then((r) => r.json())
+      .then((d) => setData(d))
+      .catch((e) => console.error(e))
+  }, [])
+
+  // fallback for kpis array conversion
+  const kpisArray = data
+    ? [
+        { title: 'Total Leads', value: data.kpis.totalLeads.toString(), change: 0, changeLabel: '', color: 'indigo' },
+        { title: 'Meetings Booked', value: data.kpis.meetingsBooked.toString(), change: 0, changeLabel: '', color: 'emerald' },
+        { title: 'Active Campaigns', value: data.kpis.activeCampaigns.toString(), change: 0, changeLabel: '', color: 'violet' },
+        { title: 'Pipeline Value', value: `$${data.kpis.pipelineValue.toLocaleString()}`, change: 0, changeLabel: '', color: 'amber' },
+      ]
+    : []
+
+  const prospects = data
+    ? data.recentProspects.map((c) => ({
+        id: c.id,
+        name: c.name,
+        firstName: '',
+        lastName: '',
+        title: '',
+        company: c.name,
+        companyId: c.id,
+        industry: '',
+        email: '',
+        phone: '',
+        location: `${c.city ?? ''}${c.city && c.state ? ', ' : ''}${c.state ?? ''}`,
+        employees: '',
+        revenue: '',
+        score: c.opportunity_score || 0,
+        status: (c.opportunity_tier as any) || 'cold',
+        source: '',
+        tags: [],
+        lastActivity: new Date(c.created_at).toLocaleDateString(),
+        aiInsight: '',
+      }))
+    : []
+
+  const activityItems = data
+    ? data.activity.map((a) => ({
+        id: a.id,
+        type: 'email' as const,
+        title: `${a.offer} ${a.status}`,
+        description: '',
+        time: new Date(a.created_at).toLocaleString(),
+        meta: a.offer,
+      }))
+    : []
+
   return (
     <div className="space-y-6 max-w-[1400px]">
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpiData.map((kpi, i) => (
+        {kpisArray.map((kpi, i) => (
           <KpiCard
             key={kpi.title}
             title={kpi.title}
@@ -74,7 +164,7 @@ export default function CommandCenterPage() {
               View all <ArrowRight className="w-3 h-3" />
             </Button>
           </div>
-          <LeadTable leads={mockLeads.slice(0, 5)} compact />
+          <LeadTable leads={prospects} compact />
         </div>
 
         {/* Right: AI Activity Feed */}
@@ -90,7 +180,7 @@ export default function CommandCenterPage() {
             </div>
 
             <div className="space-y-3">
-              {mockActivity.map((item) => (
+              {activityItems.map((item) => (
                 <div key={item.id} className="flex gap-3">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${activityBg[item.type] ?? activityBg.note}`}
@@ -167,10 +257,10 @@ export default function CommandCenterPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Emails Sent',    value: '1,842', sub: 'Total outreach',    color: 'text-blue-400' },
-            { label: 'Open Rate',      value: '52.6%', sub: '+4.1% vs benchmark', color: 'text-indigo-400' },
-            { label: 'Reply Rate',     value: '14.4%', sub: '+2.3% vs last month', color: 'text-violet-400' },
-            { label: 'Demos Booked',   value: '38',    sub: 'From email channel', color: 'text-emerald-400' },
+            { label: 'Emails Sent',    value: data ? data.outreachStats.emailsSent.toLocaleString() : '-', sub: 'Total outreach',    color: 'text-blue-400' },
+            { label: 'Open Rate',      value: '-', sub: '+4.1% vs benchmark', color: 'text-indigo-400' },
+            { label: 'Reply Rate',     value: '-', sub: '+2.3% vs last month', color: 'text-violet-400' },
+            { label: 'Demos Booked',   value: '0',    sub: 'From email channel', color: 'text-emerald-400' },
           ].map((stat) => (
             <div key={stat.label} className="bg-[#1a1a30] border border-[#252540] rounded-lg p-4">
               <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
