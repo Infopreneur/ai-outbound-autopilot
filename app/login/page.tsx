@@ -47,6 +47,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
+  function getEmailRedirectTo() {
+    if (typeof window === 'undefined') return undefined
+    return `${window.location.origin}/login`
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) return
@@ -67,6 +72,7 @@ export default function LoginPage() {
           email,
           password,
           options: {
+            emailRedirectTo: getEmailRedirectTo(),
             data: {
               full_name: name.trim(),
               name: name.trim(),

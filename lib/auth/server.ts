@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { ACCESS_TOKEN_COOKIE } from '@/lib/auth/cookies'
+import { ACCESS_TOKEN_COOKIE, ACTIVE_ACCOUNT_COOKIE } from '@/lib/auth/cookies'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
 type AccountRow = {
@@ -11,6 +11,7 @@ type AccountRow = {
 }
 
 type MembershipRow = {
+  id: string
   account_id: string
   role: string
   accounts: AccountRow | AccountRow[] | null
@@ -25,10 +26,18 @@ type InvitationRow = {
 export type AccountContext = {
   user: User
   accessToken: string
+  membershipId: string
   accountId: string
   accountName: string
   accountSlug: string
   role: string
+  memberships: Array<{
+    membershipId: string
+    accountId: string
+    accountName: string
+    accountSlug: string
+    role: string
+  }>
 }
 
 function slugify(value: string) {
@@ -41,6 +50,10 @@ function slugify(value: string) {
 
 async function getAccessToken() {
   return (await cookies()).get(ACCESS_TOKEN_COOKIE)?.value ?? null
+}
+
+async function getActiveAccountId() {
+  return (await cookies()).get(ACTIVE_ACCOUNT_COOKIE)?.value ?? null
 }
 
 async function createAccountForUser(user: User): Promise<AccountContext | null> {
@@ -85,10 +98,18 @@ async function createAccountForUser(user: User): Promise<AccountContext | null> 
     return {
       user,
       accessToken: await getAccessToken() ?? '',
+      membershipId: '',
       accountId: account.id,
       accountName: account.name,
       accountSlug: account.slug,
       role: 'owner',
+      memberships: [{
+        membershipId: '',
+        accountId: account.id,
+        accountName: account.name,
+        accountSlug: account.slug,
+        role: 'owner',
+      }],
     }
   }
 
@@ -99,6 +120,7 @@ async function findMembership(userId: string) {
   const { data, error } = await supabaseAdmin
     .from('account_memberships')
     .select(`
+      id,
       account_id,
       role,
       accounts:account_id (
@@ -116,7 +138,7 @@ async function findMembership(userId: string) {
     throw error
   }
 
-  return data as MembershipRow | null
+  return data as MembershipRow[] | null
 }
 
 async function claimPendingInvites(user: User) {
@@ -161,35 +183,40 @@ export async function getAccountContext(): Promise<AccountContext | null> {
 
   await claimPendingInvites(data.user)
 
-  let membership = await findMembership(data.user.id)
-  if (!membership) {
+  let memberships = await findMembership(data.user.id)
+  if (!memberships || memberships.length === 0) {
     return createAccountForUser(data.user)
   }
 
-  const account = Array.isArray(membership.accounts) ? membership.accounts[0] : membership.accounts
-  if (!account) {
-    membership = await findMembership(data.user.id)
-    const refreshedAccount = membership
-      ? (Array.isArray(membership.accounts) ? membership.accounts[0] : membership.accounts)
-      : null
-    if (!refreshedAccount) return null
-    return {
-      user: data.user,
-      accessToken,
-      accountId: refreshedAccount.id,
-      accountName: refreshedAccount.name,
-      accountSlug: refreshedAccount.slug,
-      role: membership?.role ?? 'owner',
-    }
-  }
+  const activeAccountId = await getActiveAccountId()
+  const normalizedMemberships = memberships
+    .map((membership) => {
+      const account = Array.isArray(membership.accounts) ? membership.accounts[0] : membership.accounts
+      if (!account) return null
+      return {
+        membershipId: membership.id,
+        accountId: account.id,
+        accountName: account.name,
+        accountSlug: account.slug,
+        role: membership.role,
+      }
+    })
+    .filter(Boolean) as AccountContext['memberships']
+
+  if (normalizedMemberships.length === 0) return null
+
+  const selectedMembership = normalizedMemberships.find((membership) => membership.accountId === activeAccountId)
+    ?? normalizedMemberships[0]
 
   return {
     user: data.user,
     accessToken,
-    accountId: account.id,
-    accountName: account.name,
-    accountSlug: account.slug,
-    role: membership.role,
+    membershipId: selectedMembership.membershipId,
+    accountId: selectedMembership.accountId,
+    accountName: selectedMembership.accountName,
+    accountSlug: selectedMembership.accountSlug,
+    role: selectedMembership.role,
+    memberships: normalizedMemberships,
   }
 }
 

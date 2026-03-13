@@ -23,6 +23,7 @@ export async function GET() {
       slug: ctx.accountSlug,
       role: ctx.role,
     },
+    memberships: ctx.memberships,
   })
 }
 
@@ -97,5 +98,6 @@ export async function PATCH(req: NextRequest) {
       slug: refreshed.accountSlug,
       role: refreshed.role,
     },
+    memberships: refreshed.memberships,
   })
 }

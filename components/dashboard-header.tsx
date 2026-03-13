@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Bell, Search, ChevronRight, Plus } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 const pageConfig: Record<string, { name: string; action?: string }> = {
@@ -22,7 +23,46 @@ function getPageConfig(pathname: string) {
 
 export function DashboardHeader() {
   const pathname = usePathname() ?? ''
+  const router = useRouter()
   const config = getPageConfig(pathname)
+  const [account, setAccount] = useState<{ id: string; name: string; role: string } | null>(null)
+  const [memberships, setMemberships] = useState<Array<{ accountId: string; accountName: string; role: string }>>([])
+
+  useEffect(() => {
+    fetch('/api/account/context')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.account) {
+          setAccount({
+            id: data.account.id,
+            name: data.account.name,
+            role: data.account.role,
+          })
+        }
+        if (Array.isArray(data?.memberships)) {
+          setMemberships(data.memberships.map((membership: {
+            accountId: string
+            accountName: string
+            role: string
+          }) => ({
+            accountId: membership.accountId,
+            accountName: membership.accountName,
+            role: membership.role,
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  async function switchAccount(accountId: string) {
+    const res = await fetch('/api/account/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId }),
+    })
+    if (!res.ok) return
+    router.refresh()
+  }
 
   return (
     <header className="h-16 border-b border-[#1e1e38] bg-[#07070e]/80 backdrop-blur-sm flex items-center px-6 gap-4 sticky top-0 z-20">
@@ -46,6 +86,20 @@ export function DashboardHeader() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        {account && memberships.length > 1 && (
+          <select
+            value={account.id}
+            onChange={(e) => switchAccount(e.target.value)}
+            className="h-9 max-w-[220px] px-3 bg-[#111120] border border-[#1e1e38] rounded-lg text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+          >
+            {memberships.map((membership) => (
+              <option key={membership.accountId} value={membership.accountId}>
+                {membership.accountName} ({membership.role})
+              </option>
+            ))}
+          </select>
+        )}
+
         {config.action && (
           <Button variant="primary" size="sm">
             <Plus className="w-3.5 h-3.5" />
@@ -59,7 +113,7 @@ export function DashboardHeader() {
         </button>
 
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white cursor-pointer">
-          A
+          {(account?.name?.[0] ?? 'A').toUpperCase()}
         </div>
       </div>
     </header>
