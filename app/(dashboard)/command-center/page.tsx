@@ -54,6 +54,17 @@ interface DashboardData {
   }
 }
 
+function isDashboardData(value: unknown): value is DashboardData {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.kpis === 'object' &&
+    Array.isArray(candidate.recentProspects) &&
+    Array.isArray(candidate.activity) &&
+    typeof candidate.outreachStats === 'object'
+  )
+}
+
 const kpiIcons = [
   <Users key="users" className="w-4 h-4" />,
   <CalendarCheck key="cal" className="w-4 h-4" />,
@@ -81,12 +92,27 @@ const activityBg: Record<string, string> = {
 
 export default function CommandCenterPage() {
   const [data, setData] = useState<DashboardData | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/dashboard/summary')
       .then((r) => r.json())
-      .then((d) => setData(d))
-      .catch((e) => console.error(e))
+      .then((d) => {
+        if (isDashboardData(d)) {
+          setData(d)
+          setError(null)
+          return
+        }
+
+        const message = typeof d?.error === 'string' ? d.error : 'Failed to load dashboard summary.'
+        setData(null)
+        setError(message)
+      })
+      .catch((e) => {
+        console.error(e)
+        setData(null)
+        setError('Failed to load dashboard summary.')
+      })
   }, [])
 
   // fallback for kpis array conversion
@@ -136,6 +162,12 @@ export default function CommandCenterPage() {
 
   return (
     <div className="space-y-6 max-w-[1400px]">
+      {error && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpisArray.map((kpi, i) => (

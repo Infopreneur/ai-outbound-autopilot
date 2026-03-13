@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { getAccountContext } from '@/lib/auth/server'
 import { getUserSupabaseClient } from '@/lib/supabase/user-server'
 
+function isMissingRelationError(message: string) {
+  return message.includes('does not exist') || message.includes('Could not find the table')
+}
+
 export async function GET() {
   try {
     const ctx = await getAccountContext()
@@ -47,7 +51,7 @@ export async function GET() {
       .gte('created_at', thirtyDaysAgo)
 
     // active campaigns count
-    const { count: activeCampaignsCount } = await supabase
+    const { count: activeCampaignsCount, error: campaignsError } = await supabase
       .from('campaigns')
       .select('id', { head: true, count: 'exact' })
       .eq('account_id', ctx.accountId)
@@ -58,7 +62,11 @@ export async function GET() {
       .select('value, stage')
       .eq('account_id', ctx.accountId)
 
-    if (dealsError) {
+    if (campaignsError && !isMissingRelationError(campaignsError.message)) {
+      throw campaignsError
+    }
+
+    if (dealsError && !isMissingRelationError(dealsError.message)) {
       throw dealsError
     }
 
@@ -72,7 +80,7 @@ export async function GET() {
       kpis: {
         totalLeads: totalLeads ?? 0,
         meetingsBooked: 0,
-        activeCampaigns: activeCampaignsCount ?? 0,
+        activeCampaigns: campaignsError ? 0 : (activeCampaignsCount ?? 0),
         pipelineValue,
       },
       recentProspects: recentProspects ?? [],
