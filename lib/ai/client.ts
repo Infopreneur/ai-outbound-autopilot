@@ -75,6 +75,22 @@ class MockAIClient implements AIClient {
       })
     }
 
+    if (userPrompt.includes('world-class B2B copywriter')) {
+      // Offer message prompt
+      return JSON.stringify({
+        subjectLine: 'Your Free Online Positioning Report is Ready',
+        messageBody:
+          "Hi [First Name],\n\nI noticed [Company] has been building a great reputation in Orlando with [rating] stars and [review_count] reviews.\n\n" +
+          "However, without a website, you're likely invisible to many potential customers searching online.\n\n" +
+          "I've created a personalized Online Positioning Report showing exactly where you stand vs competitors and what to fix first.\n\n" +
+          "View your free report here: [REPORT_URL]",
+        cta: 'Click the link above to see your report',
+        channel: 'email',
+        angle: 'pain',
+        offerId: 'positioning-report',
+      })
+    }
+
     // Default → company analysis
     return JSON.stringify({
       summary:

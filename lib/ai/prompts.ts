@@ -120,6 +120,7 @@ export function buildOfferMessagePrompt(
   offerId: OfferId,
   angle: MessageAngle,
   channel: 'email' | 'sms' | 'linkedin',
+  reportUrl?: string,
 ): string {
   const offerDesc   = OFFER_DESCRIPTIONS[offerId]
   const angleGuide  = ANGLE_INSTRUCTIONS[angle]
@@ -130,6 +131,10 @@ export function buildOfferMessagePrompt(
       : channel === 'linkedin'
       ? 'LinkedIn DM — brief, no pitch until rapport, personal and curious tone.'
       : 'Email — subject line + 4-6 sentence body, professional but conversational.'
+
+  const reportInstruction = offerId === 'positioning-report' && reportUrl
+    ? `Include the report link in the message: "${reportUrl}". End the messageBody with: "View your free report here: ${reportUrl}".`
+    : ''
 
   return `You are a world-class B2B copywriter who writes short, natural outreach messages that convert.
 
@@ -144,6 +149,8 @@ ${angleGuide}
 
 CHANNEL: ${channel.toUpperCase()}
 ${channelGuide}
+
+${reportInstruction}
 
 RULES:
 - Never be generic. Reference something specific about THIS company (their name, niche, city, rating, review count, or missing website).

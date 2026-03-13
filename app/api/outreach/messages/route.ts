@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const {
     companyId, offer, channel, subject, messageBody,
     status = 'draft', sequenceStep = 1, scheduledAt,
-    angle,
+    angle, reportUrl,
   } = body
 
   if (!companyId || !offer || !channel || !messageBody)
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       sequence_step: sequenceStep,
       scheduled_at:  scheduledAt   ?? null,
       angle:         angle         ?? null,
+      // report_url:    reportUrl     ?? null, // TODO: add column migration
     })
     .select()
     .single()

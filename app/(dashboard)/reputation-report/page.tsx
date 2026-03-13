@@ -45,6 +45,7 @@ type Report = {
   lost_revenue_estimate: number
   score_breakdown: Record<string, number>
   ai_action_plan: string[]
+  share_token: string
   generated_at: string
 }
 
@@ -81,6 +82,7 @@ function ReputationReportInner() {
   const [report,     setReport]     = useState<Report | null>(null)
   const [generating, setGenerating] = useState(false)
   const [genError,   setGenError]   = useState<string | null>(null)
+  const [copied,     setCopied]     = useState(false)
 
   // Preload from query param
   useEffect(() => {
@@ -453,6 +455,30 @@ function ReputationReportInner() {
                     View Company Intel
                   </Button>
                 </Link>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-indigo-500/20">
+                <div className="text-xs text-slate-500 mb-2">Share this report</div>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/report/${report.share_token}`}
+                    className="flex-1 h-9 px-3 bg-[#0f122a] border border-[#252540] rounded-lg text-xs text-slate-200"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${typeof window !== 'undefined' ? window.location.origin : ''}/report/${report.share_token}`,
+                      )
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    }}
+                  >
+                    {copied ? 'Copied' : 'Copy'}
+                  </Button>
+                </div>
               </div>
             </div>
 

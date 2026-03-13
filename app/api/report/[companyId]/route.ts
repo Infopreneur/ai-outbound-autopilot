@@ -134,8 +134,9 @@ export async function GET(
     return NextResponse.json({ error: 'Company not found.' }, { status: 404 })
 
   // Check cache (unless refresh requested)
+  let cachedReport: any | null = null
   if (!refresh) {
-    const { data: cached } = await supabaseAdmin
+    const { data } = await supabaseAdmin
       .from('reputation_reports')
       .select('*')
       .eq('company_id', companyId)
@@ -143,7 +144,28 @@ export async function GET(
       .limit(1)
       .single()
 
-    if (cached) return NextResponse.json(cached)
+    if (data) {
+      // Ensure older reports still have a share token.
+      if (!data.share_token) {
+        const shareToken = crypto.randomUUID()
+        await supabaseAdmin
+          .from('reputation_reports')
+          .update({ share_token: shareToken })
+          .eq('company_id', companyId)
+        data.share_token = shareToken
+      }
+      return NextResponse.json(data)
+    }
+  } else {
+    const { data } = await supabaseAdmin
+      .from('reputation_reports')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    cachedReport = data
   }
 
   // Compute scores
@@ -182,6 +204,7 @@ export async function GET(
   })
 
   // Build full report
+  const shareToken = cachedReport?.share_token ?? crypto.randomUUID()
   const report = {
     company_id:           companyId,
     company_name:         company.name,
@@ -198,6 +221,7 @@ export async function GET(
     lost_revenue_estimate: lostRevenue,
     score_breakdown:      breakdown,
     ai_action_plan:       aiActionPlan,
+    share_token:          shareToken,
     generated_at:         new Date().toISOString(),
   }
 

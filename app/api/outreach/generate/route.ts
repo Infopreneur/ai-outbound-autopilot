@@ -55,11 +55,30 @@ export async function POST(req: Request) {
     linkedin_url:   null,
   }
 
+  // For positioning-report, generate the report to get the share URL
+  let reportUrl: string | undefined
+  if (offerId === 'positioning-report') {
+    try {
+      const reportRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/report/${companyId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (reportRes.ok) {
+        const reportData = await reportRes.json()
+        reportUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/report/${reportData.share_token}`
+      }
+    } catch (err) {
+      console.warn('[outreach/generate] Failed to generate report for URL:', err)
+      // Continue without URL — message will still be generated
+    }
+  }
+
   const prompt = buildOfferMessagePrompt(
     companyRecord,
     offerId as OfferId,
     angle as MessageAngle,
     channel as typeof VALID_CHANNELS[number],
+    reportUrl,
   )
 
   let parsed: Record<string, string>
@@ -84,7 +103,8 @@ export async function POST(req: Request) {
     angle,
     channel,
     subjectLine: parsed.subjectLine ?? '',
-    messageBody: parsed.messageBody ?? '',
+    messageBody: reportUrl ? (parsed.messageBody ?? '').replace('[REPORT_URL]', reportUrl) : parsed.messageBody ?? '',
     cta:         parsed.cta         ?? '',
+    reportUrl:   reportUrl          ?? null,
   })
 }
