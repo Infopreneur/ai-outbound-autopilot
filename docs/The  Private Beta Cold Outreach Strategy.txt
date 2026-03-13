@@ -1,0 +1,211 @@
+Prospecting
+
+The "Sniper" Prospecting Plan
+Objective: Identify 5–10 high-value prospects per day who have money (running ads) or
+momentum (expanding/hiring) and a valid "Deep Dive" hook.
+Target Profile: Business Owners with $1M+ revenue (High Ticket services) who are already
+spending money on marketing.
+
+Strategy A: The "Ad Spender" Method (High Intent)
+Why it works: If they are running Meta/Google ads, they have traffic. If they have traffic, they
+have a "bleeding neck" problem: wasted clicks. Your bot stops the bleeding.
+1.​ Go to the Meta Ad Library.
+2.​ Search Settings:
+○​ Ad Category: All Ads
+○​ Keywords: {Niche} + {City} (e.g., "Roofing Dallas", "Med Spa Miami",
+"Hvac Austin").
+3.​ The Filter: Look for companies running active ads (started in the last 30 days).
+4.​ The "Deep Dive" Hook:
+○​ Click "See Ad Details."
+○​ Look at the offer they are running.
+○​ Side Note Script: "Side note: I saw you're pushing the 'Free Roof Inspection' offer
+on FB right now—the bot is perfect for qualifying those leads instantly."
+
+Strategy B: The "Expansion" Method (The "O2E" Angle)
+Why it works: Businesses opening new locations or buying franchises are in "Systems Mode."
+They need automation to handle the new volume.
+1.​ Google News Search:
+○​ Search: "{Niche}" "new location" "{State}"
+○​ Search: "{Niche}" "grand opening" "{Year}"
+○​ Example: "Med Spa new location Florida"
+2.​ The "Deep Dive" Hook:
+○​ Find the Press Release or News Article.
+
+○​ Side Note Script: "Side note: Congrats on the new location in {City}! Saw the
+announcement in {Publication}."
+
+Strategy C: The "Hiring" Method (The "Growth" Angle)
+Why it works: If they are hiring "Sales Reps" or "Appointment Setters," it means they have too
+many leads and not enough people to call them. Your bot is the appointment setter.
+1.​ LinkedIn / Indeed Search:
+○​ Role: "Sales Representative" or "Appointment Setter" or "Receptionist".
+○​ Filter: "Date Posted: Past Week".
+○​ Company: Filter by your target industry.
+2.​ The "Deep Dive" Hook:
+○​ Read the job description.
+○​ Side Note Script: "Side note: I saw you're hiring for a Sales Rep right now. This
+bot actually handles the initial lead qualification automatically so your new rep
+only talks to qualified buyers."
+
+Strategy D: The "Multi-Location" Map Search (Volume)
+Why it works: Franchise owners often own 3-5 locations. One "Yes" from them equals 5
+subscriptions.
+1.​ Google Maps:
+○​ Search: "{Niche} near {Major City}".
+○​ Look for businesses with 100+ reviews (High volume).
+2.​ The Website Check:
+○​ Go to their site. Scroll to the bottom footer.
+○​ Does it say "Serving {City A}, {City B}, {City C}"?
+3.​ The "Deep Dive" Hook:
+○​ Side Note Script: "Side note: I noticed you are covering both the {City A} and
+{City B} service areas—the bot handles the routing for both locations
+seamlessly."
+
+Execution Workflow (Daily Routine)
+Step 1: The Hunt (30 Mins)
+●​ Open Meta Ad Library & LinkedIn.
+●​ Find 5 companies fitting the criteria above.
+Step 2: The Outreach (10 Mins)
+●​ Find the Owner/Founder on LinkedIn or "About Us" page. AND/OR send them an email.
+●​ Send the "Private Beta" Template
+●​ Insert the specific "Side Note" you found in Step 1.
+*Make sure your LinkedIn profile matches your AI agency business.
+
+Outreach
+
+The "Private Beta" Cold Outreach Strategy
+Objective: Elicit a simple "Yes/Sure" reply from the prospect.
+The "Mechanism": We use our internal 1-Click Builder to scrape their URL and create a "Live
+Preview" (Their website + Our Chat Bubble) before we ever message them.
+Philosophy: We are not selling; we are offering a "private test drive" of a vehicle we already
+built for them.
+
+Phase 1: The "Deep Dive" Research
+Before messaging, find one specific detail about them that proves you are human. This is the
+"Side Note." Do not be generic.
+
+3 Examples of "Deep Dive" Side Notes:
+Example A: The Content/Media Dive Use this if they have a podcast, YouTube
+channel, or active blog. "Side note: I listened to your recent podcast on scaling
+operations—your point about 'hiring for character' was spot on!
+"
+
+🙏
+
+Example B: The Expansion/News Dive Use this if they are opening new locations
+or won an award. "Side note: Saw the press release about the new Scottsdale
+location opening next month. Congrats on the expansion!
+"
+
+🚀
+
+Example C: The Hiring/Growth Dive Use this if they have job posts on
+LinkedIn/Indeed. "Side note: I noticed you guys are aggressively hiring sales reps
+right now—looks like you’re gearing up for a big Q4!
+"
+
+💪
+
+Phase 2: The Universal Template (Soft CTA)
+Instructions: Copy and paste. Replace {Variables}. Do not include a link or ask for a phone
+number yet. The goal is just to get a reply.
+Subject (Email): Question about {Company Name} / The {Niche} AI Project
+Body / DM: Hey, Mr./Ms. {Last Name}!
+
+My team and I are currently working on what we believe is the most powerful AI {Niche
+Industry} assistant.
+I actually went ahead and used {Company Name}'s website to train a demo version (don't
+worry, I'm only sharing this with you), so it already knows your services, pricing, and
+brand voice.
+I’d love to send you the preview link so you can test it live on your site? I genuinely want to offer
+this to you at no cost to test out.
+It handles things like {Benefit 1: e.g., 24/7 quoting} and {Benefit 2: e.g.,
+qualifying leads} instantly.
+Would you be open to seeing it?
+Side note: {Insert Deep Dive Insight Here}!
+
+🙏
+
+Phase 3: Handling the "Yes" (The Demo Delivery)
+Once they reply with "Sure," "Yes," or "Send it over," now you have permission to ask for the
+delivery method. Since your system sends the link via SMS for the best mobile experience,
+frame it that way.
+The "Permission Granted" Script:
+"Awesome.
+What is the best cell number to text the preview link to?"
+*If they object over sending a phone number: “Our demo is tied to our SMS
+system, so, in order to try it we need an SMS enabled phone number, maybe you
+have a company number that can accept SMS?”
+
+The "System" Workflow (Internal SOP)
+This is for the team to understand why we are doing it this way.
+1.​ Scrape & Build:
+○​ Wait for the "Yes" from the prospect and phone number.
+○​ Input prospect URL + info into the 1-Click AI Builder.
+
+○​ System generates the "Preview Page" (Their Site + Chat Bubble) and sends
+them the magic link.
+
+2.​ The User Experience:
+○​ Prospect clicks link -> Sees their website with our bot -> Clicks "Start Demo"
+
+Closing
+
+The "Full Reveal" (The VSL Handoff)
+Objective: Transition the prospect from the "Frontend Experience" (the chat demo) to the
+"Backend Value" (the VSL) to automate the sales pitch.
+Timing: Send this 15–20 minutes after you see they have interacted with the demo bot.
+
+The Strategy:
+The demo shows them "what" it is (a chatbot). The VSL explains "how" it makes them money
+(automation, lead capture, ROI).
+We position the VSL as the "Advanced Features" walkthrough.
+
+The "VSL Handoff" Script (SMS/DM):
+Option A (The "Missing Piece" Angle):
+"Hey {First Name}, hope you had fun testing the bot!
+What you just saw was about 10% of what the system actually does. The real
+magic happens in the backend (automated follow-ups, CRM entry, and booking
+logic).
+I made a short video breaking down exactly how those backend features work to
+print leads: {Link to VSL Page}
+Let me know if you can see the video?"
+Option B (The "Result" Angle):
+"Hey {First Name}, quick question—did the bot feel natural to you?
+I ask because most people don't realize the bot is also syncing that conversation to
+a CRM in real-time.
+I recorded a quick breakdown of how we use this to double lead conversion for
+{Niche} businesses without hiring more staff: {Link to VSL Page}
+Worth a quick watch if you want to see the full setup."
+
+The Post-VSL Protocol
+Objective: Close the deal after the VSL has done the heavy lifting.
+
+Scenario A: They watched the VSL & Booked a Call (The Perfect Flow)
+VSL page has a calendar embedded.
+●​ Action: Prepare for the call.
+●​ Script: None needed. The VSL did its job.
+
+Scenario B: They clicked the link but didn't book (The Nudge)
+Send this 24 hours later.
+●​ Script:​
+"Hey {First Name},​
+Did the video about the backend automation make sense?”
+
+Scenario C: They ask "How much is it?" (Buying Signal)
+Since they watched the VSL, they are price-anchored now.
+●​ Script:​
+​
+“The setup varies slightly based on your needs. We can do a quick call to find out what
+tier fits you best? It’ll take 15 mins. Is tomorrow or {day} better for you?”
+
+Summary of the "Perfect" Workflow:
+1.​ Outreach: "I trained a bot on your site." (Deep Dive Hook)
+2.​ Reply: "Sure, send it."
+3.​ Delivery: "What's your mobile? I'll text the demo."
+4.​ Experience: They play with the bot on their phone.
+5.​ The Pivot: "That was just 10%. Watch this video to see how it makes money." (VSL
+Link).
+6.​ The Close: They book a call or you follow up to book it.
+
+

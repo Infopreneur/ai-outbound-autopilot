@@ -27,6 +27,10 @@ type Company = {
   opportunity_reason: string | null
   recommended_offer: string | null
   recommended_next_step: string | null
+  strategy?: string | null
+  deep_dive_note?: string | null
+  source_url?: string | null
+  converted_to_deal?: boolean | null
   created_at: string
 }
 

@@ -7,7 +7,7 @@ export async function GET() {
     .select(
       'id, name, website, phone, city, state, rating, review_count, ' +
       'opportunity_score, opportunity_tier, opportunity_reason, ' +
-      'recommended_offer, recommended_next_step, created_at',
+      'recommended_offer, recommended_next_step, strategy, deep_dive_note, source_url, converted_to_deal, created_at',
     )
     .order('opportunity_score', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })

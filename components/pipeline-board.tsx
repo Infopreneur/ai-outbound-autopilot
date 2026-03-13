@@ -3,7 +3,7 @@
 import { GripVertical, Calendar, User, TrendingUp } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
-import type { Deal, DealStage } from '@/lib/mock-data'
+import type { DealRecord, DealStage } from '@/lib/types/deals'
 
 const STAGES: { key: DealStage; label: string; color: string; barColor: string }[] = [
   { key: 'prospecting',  label: 'Prospecting',  color: 'text-slate-400',   barColor: 'bg-slate-500' },
@@ -14,9 +14,12 @@ const STAGES: { key: DealStage; label: string; color: string; barColor: string }
   { key: 'closed_won',   label: 'Closed Won',   color: 'text-emerald-400', barColor: 'bg-emerald-500' },
 ]
 
-function DealCard({ deal, barColor }: { deal: Deal; barColor: string }) {
+function DealCard({ deal, barColor, highlighted }: { deal: DealRecord; barColor: string; highlighted?: boolean }) {
   return (
-    <div className="bg-[#1a1a30] border border-[#252540] rounded-lg p-3.5 hover:border-[#323258] hover:bg-[#1e1e36] transition-all duration-150 cursor-grab active:cursor-grabbing group">
+    <div className={cn(
+      'bg-[#1a1a30] border border-[#252540] rounded-lg p-3.5 hover:border-[#323258] hover:bg-[#1e1e36] transition-all duration-150 cursor-grab active:cursor-grabbing group',
+      highlighted && 'border-indigo-500/60 bg-indigo-500/10 shadow-[0_0_0_1px_rgba(99,102,241,0.25)]',
+    )}>
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-slate-100 leading-snug truncate">{deal.name}</div>
@@ -26,6 +29,12 @@ function DealCard({ deal, barColor }: { deal: Deal; barColor: string }) {
       </div>
 
       <div className="text-lg font-bold text-white mb-2.5">{formatCurrency(deal.value)}</div>
+
+      {deal.deepDiveNote && (
+        <div className="mb-2.5 text-[11px] text-slate-400 line-clamp-2" title={deal.deepDiveNote}>
+          {deal.deepDiveNote}
+        </div>
+      )}
 
       <div className="mb-2.5">
         <Progress value={deal.probability} barClassName={barColor} />
@@ -49,10 +58,11 @@ function DealCard({ deal, barColor }: { deal: Deal; barColor: string }) {
 }
 
 interface PipelineBoardProps {
-  deals: Deal[]
+  deals: DealRecord[]
+  highlightedDealId?: string
 }
 
-export function PipelineBoard({ deals }: PipelineBoardProps) {
+export function PipelineBoard({ deals, highlightedDealId }: PipelineBoardProps) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {STAGES.map((stage) => {
@@ -88,7 +98,12 @@ export function PipelineBoard({ deals }: PipelineBoardProps) {
                 </div>
               ) : (
                 stageDeals.map((deal) => (
-                  <DealCard key={deal.id} deal={deal} barColor={stage.barColor} />
+                  <DealCard
+                    key={deal.id}
+                    deal={deal}
+                    barColor={stage.barColor}
+                    highlighted={deal.id === highlightedDealId}
+                  />
                 ))
               )}
             </div>

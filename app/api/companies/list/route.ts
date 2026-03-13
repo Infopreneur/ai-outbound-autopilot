@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const state    = p.get('state')    ?? ''
   const source   = p.get('source')   ?? ''
   const tier     = p.get('tier')     ?? ''
+  const strategy = p.get('strategy') ?? ''
   const minScore = parseInt(p.get('minScore') ?? '0') || 0
   const sortBy   = VALID_SORT.has(p.get('sortBy') ?? '') ? (p.get('sortBy') as string) : 'created_at'
   const ascending = p.get('sortOrder') === 'asc'
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
   if (state)    query = query.eq('state', state.toUpperCase())
   if (source)   query = query.eq('source', source)
   if (tier)     query = query.eq('opportunity_tier', tier)
+  if (strategy) query = query.eq('strategy', strategy)
   if (minScore) query = query.gte('opportunity_score', minScore)
 
   const from = (page - 1) * pageSize

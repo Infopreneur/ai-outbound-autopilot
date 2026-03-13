@@ -8,19 +8,48 @@ import {
 } from 'lucide-react'
 import { PipelineBoard } from '@/components/pipeline-board'
 import { Button } from '@/components/ui/button'
-import { mockDeals } from '@/lib/mock-data'
+import { supabaseAdmin } from '@/lib/supabase/server'
+import { mapDealRow } from '@/lib/deals'
 import { formatCurrency } from '@/lib/utils'
 
-const won     = mockDeals.filter((d) => d.stage === 'closed_won')
-const active  = mockDeals.filter((d) => !['closed_won', 'closed_lost'].includes(d.stage))
-const pipeVal = active.reduce((s, d) => s + d.value, 0)
-const wonVal  = won.reduce((s, d) => s + d.value, 0)
-const avgDeal = active.length > 0 ? Math.round(pipeVal / active.length) : 0
-const winRate = mockDeals.length > 0
-  ? Math.round((won.length / mockDeals.filter((d) => ['closed_won', 'closed_lost'].includes(d.stage)).length || 0) * 100)
-  : 0
+export default async function PipelinePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ deal?: string }>
+}) {
+  const params = await searchParams
+  const highlightedDealId = params?.deal
 
-export default function PipelinePage() {
+  const { data, error } = await supabaseAdmin
+    .from('deals')
+    .select(`
+      id,
+      name,
+      owner,
+      stage,
+      value,
+      probability,
+      deep_dive_note,
+      created_at,
+      company_id,
+      source_prospect_id,
+      companies:company_id ( id, name )
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const deals = (data ?? []).map(mapDealRow)
+  const won = deals.filter((d) => d.stage === 'closed_won')
+  const active = deals.filter((d) => !['closed_won', 'closed_lost'].includes(d.stage))
+  const closed = deals.filter((d) => ['closed_won', 'closed_lost'].includes(d.stage))
+  const pipeVal = active.reduce((s, d) => s + d.value, 0)
+  const wonVal = won.reduce((s, d) => s + d.value, 0)
+  const avgDeal = active.length > 0 ? Math.round(pipeVal / active.length) : 0
+  const winRate = closed.length > 0 ? Math.round((won.length / closed.length) * 100) : 0
+
   return (
     <div className="max-w-[1400px] space-y-6">
       {/* Stats */}
@@ -75,7 +104,7 @@ export default function PipelinePage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-white">Deal Pipeline</h2>
-          <p className="text-xs text-slate-500 mt-0.5">{active.length} active deals · {mockDeals.length} total</p>
+          <p className="text-xs text-slate-500 mt-0.5">{active.length} active deals · {deals.length} total</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm">
@@ -90,7 +119,7 @@ export default function PipelinePage() {
       </div>
 
       {/* Kanban board */}
-      <PipelineBoard deals={mockDeals} />
+      <PipelineBoard deals={deals} highlightedDealId={highlightedDealId} />
 
       {/* Bottom: Deal insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -103,7 +132,7 @@ export default function PipelinePage() {
             <h3 className="text-sm font-semibold text-white">At-Risk Deals</h3>
           </div>
           <div className="space-y-3">
-            {mockDeals
+            {deals
               .filter((d) => d.daysInStage > 7 && !['closed_won', 'closed_lost'].includes(d.stage))
               .slice(0, 3)
               .map((deal) => (
@@ -115,7 +144,7 @@ export default function PipelinePage() {
                   <div className="text-sm font-bold text-amber-400">{formatCurrency(deal.value)}</div>
                 </div>
               ))}
-            {mockDeals.filter((d) => d.daysInStage > 7 && !['closed_won', 'closed_lost'].includes(d.stage)).length === 0 && (
+            {deals.filter((d) => d.daysInStage > 7 && !['closed_won', 'closed_lost'].includes(d.stage)).length === 0 && (
               <div className="text-xs text-slate-600 text-center py-3">No at-risk deals</div>
             )}
           </div>
@@ -156,7 +185,7 @@ export default function PipelinePage() {
             <h3 className="text-sm font-semibold text-white">Closing Soon</h3>
           </div>
           <div className="space-y-3">
-            {mockDeals
+            {deals
               .filter((d) => !['closed_won', 'closed_lost'].includes(d.stage))
               .sort((a, b) => new Date(a.closeDate).getTime() - new Date(b.closeDate).getTime())
               .slice(0, 4)

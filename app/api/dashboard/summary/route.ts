@@ -43,12 +43,26 @@ export async function GET() {
       .select('id', { head: true, count: 'exact' })
       .eq('status', 'active')
 
+    const { data: deals, error: dealsError } = await supabaseAdmin
+      .from('deals')
+      .select('value, stage')
+
+    if (dealsError) {
+      throw dealsError
+    }
+
+    const pipelineValue = (deals ?? []).reduce((sum, deal) => {
+      if (deal.stage === 'closed_won' || deal.stage === 'closed_lost') return sum
+      const value = typeof deal.value === 'number' ? deal.value : Number(deal.value ?? 0)
+      return sum + (Number.isFinite(value) ? value : 0)
+    }, 0)
+
     return NextResponse.json({
       kpis: {
         totalLeads: totalLeads ?? 0,
         meetingsBooked: 0,
         activeCampaigns: activeCampaignsCount ?? 0,
-        pipelineValue: 0,
+        pipelineValue,
       },
       recentProspects: recentProspects ?? [],
       activity: activityData ?? [],
@@ -56,8 +70,9 @@ export async function GET() {
         emailsSent: emailsSent ?? 0,
       },
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('dashboard summary error', err)
-    return NextResponse.json({ error: err.message || String(err) }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
