@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Key, User, Settings as SettingsIcon, Mail, Globe, Bot, Zap } from 'lucide-react'
 
@@ -26,11 +26,35 @@ export default function SystemSettingsPage() {
   })
 
   // System Preferences
-  const [preferences, setPreferences] = useState({
-    theme: 'dark',
-    notifications: true,
-    dataRetention: '90',
+  const [preferences, setPreferences] = useState(() => {
+    // initialize from localStorage if available
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('preferences') : null
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        // ignore
+      }
+    }
+    return { theme: 'dark', notifications: true, dataRetention: '90' }
   })
+
+  // apply theme on change
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement
+      root.classList.remove('light', 'dark')
+      if (preferences.theme === 'system') {
+        // follow system
+        const mq = window.matchMedia('(prefers-color-scheme: dark)')
+        root.classList.add(mq.matches ? 'dark' : 'light')
+      } else {
+        root.classList.add(preferences.theme)
+      }
+    }
+    // persist
+    localStorage.setItem('preferences', JSON.stringify(preferences))
+  }, [preferences])
 
   const handleApiKeyChange = (key: string, value: string) => {
     setApiKeys(prev => ({ ...prev, [key]: value }))
