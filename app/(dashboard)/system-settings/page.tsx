@@ -26,12 +26,18 @@ export default function SystemSettingsPage() {
   })
 
   // System Preferences
-  const [preferences, setPreferences] = useState(() => {
+  interface Preferences {
+    theme: 'light' | 'dark' | 'system'
+    notifications: boolean
+    dataRetention: string
+  }
+
+  const [preferences, setPreferences] = useState<Preferences>(() => {
     // initialize from localStorage if available
     const saved = typeof window !== 'undefined' ? localStorage.getItem('preferences') : null
     if (saved) {
       try {
-        return JSON.parse(saved)
+        return JSON.parse(saved) as Preferences
       } catch {
         // ignore
       }
@@ -64,8 +70,8 @@ export default function SystemSettingsPage() {
     setUserAccount(prev => ({ ...prev, [key]: value }))
   }
 
-  const handlePreferenceChange = (key: string, value: any) => {
-    setPreferences(prev => ({ ...prev, [key]: value }))
+  const handlePreferenceChange = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
+    setPreferences((prev) => ({ ...prev, [key]: value }))
   }
 
   const saveSettings = () => {
@@ -291,7 +297,7 @@ export default function SystemSettingsPage() {
             </div>
             <select
               value={preferences.theme}
-              onChange={(e) => handlePreferenceChange('theme', e.target.value)}
+              onChange={(e) => handlePreferenceChange('theme', e.target.value as Preferences['theme'])}
               className="w-32 px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="light">Light</option>
