@@ -70,7 +70,7 @@ function NavLink({
         indent ? 'px-3 py-2 ml-5' : 'px-3 py-2.5',
         isActive
           ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+          : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]',
       )}
     >
       <Icon className={cn('flex-shrink-0', indent ? 'w-3.5 h-3.5' : 'w-4 h-4', isActive ? 'text-indigo-400' : '')} />
@@ -89,15 +89,15 @@ export function DashboardSidebar() {
   }
 
   return (
-    <aside className="w-[220px] min-h-screen bg-[#0b0b18] border-r border-[#1e1e38] flex flex-col">
+    <aside className="w-[220px] min-h-screen bg-[var(--shell-bg)] border-r border-[var(--panel-border)] flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-[#1e1e38]">
+      <div className="h-16 flex items-center px-5 border-b border-[var(--panel-border)]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <Zap className="w-4 h-4 text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-sm font-bold text-white leading-none">AI Autopilot</div>
+            <div className="text-sm font-bold text-[var(--text-primary)] leading-none">AI Autopilot</div>
             <div className="text-[10px] text-indigo-400 font-medium mt-0.5">Outbound Platform</div>
           </div>
         </div>
@@ -114,7 +114,7 @@ export function DashboardSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 pb-2 overflow-y-auto">
-        <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2">
+        <div className="text-[10px] font-semibold text-[var(--text-subtle)] uppercase tracking-wider px-3 mb-2">
           Platform
         </div>
         <div className="space-y-0.5 mb-4">
@@ -131,7 +131,7 @@ export function DashboardSidebar() {
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                     parentActive
                       ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/25 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]',
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]',
                   )}
                 >
                   <item.icon className={cn('w-4 h-4 flex-shrink-0', parentActive ? 'text-indigo-400' : '')} />
@@ -159,7 +159,7 @@ export function DashboardSidebar() {
         </div>
 
         {/* System */}
-        <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider px-3 mb-2 mt-3">
+        <div className="text-[10px] font-semibold text-[var(--text-subtle)] uppercase tracking-wider px-3 mb-2 mt-3">
           System
         </div>
         <div className="space-y-0.5">

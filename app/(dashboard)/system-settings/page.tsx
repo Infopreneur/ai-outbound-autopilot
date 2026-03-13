@@ -132,6 +132,9 @@ export default function SystemSettingsPage() {
         const payload = data as AccountSettingsPayload
         setApiKeys(payload.apiKeys)
         setPreferences(payload.preferences)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('workspacePreferences', JSON.stringify(payload.preferences))
+        }
       })
       .catch((err) => setAccountError(err instanceof Error ? err.message : 'Failed to load workspace settings.'))
       .finally(() => setLoadingSettings(false))
@@ -265,7 +268,13 @@ export default function SystemSettingsPage() {
   }
 
   const handlePreferenceChange = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
-    setPreferences((prev) => ({ ...prev, [key]: value }))
+    setPreferences((prev) => {
+      const next = { ...prev, [key]: value }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('workspacePreferences', JSON.stringify(next))
+      }
+      return next
+    })
   }
 
   const saveSettings = () => {
@@ -336,6 +345,9 @@ export default function SystemSettingsPage() {
           const settings = settingsResult.value
           setApiKeys(settings.apiKeys)
           setPreferences(settings.preferences)
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('workspacePreferences', JSON.stringify(settings.preferences))
+          }
         }
 
         const accountErrorMessage = accountResult.status === 'rejected' ? accountResult.reason : null
@@ -379,32 +391,32 @@ export default function SystemSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[var(--text-primary)]">
       <div>
-        <h1 className="text-2xl font-bold text-white">System Settings</h1>
-        <p className="text-slate-400 mt-1">Configure API keys, user account, and system preferences</p>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">System Settings</h1>
+        <p className="text-[var(--text-muted)] mt-1">Configure API keys, user account, and system preferences</p>
       </div>
 
       {/* API Configuration */}
-      <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
+      <div className="bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Key className="w-5 h-5" />
             API Configuration
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-muted)] text-sm mt-1">
             Manage API keys for external services used by the system
           </p>
         </div>
         <div className="space-y-4">
           {loadingSettings && (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
               <Loader2 className="w-4 h-4 animate-spin" />Loading workspace settings…
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label htmlFor="anthropic" className="text-slate-300 flex items-center gap-2 text-sm font-medium">
+              <label htmlFor="anthropic" className="text-[var(--text-secondary)] flex items-center gap-2 text-sm font-medium">
                 <Bot className="w-4 h-4" />
                 Anthropic API Key
               </label>
@@ -414,11 +426,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.anthropic}
                 onChange={(e) => handleApiKeyChange('anthropic', e.target.value)}
                 placeholder="sk-ant-..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="supabaseUrl" className="text-slate-300 flex items-center gap-2 text-sm font-medium">
+              <label htmlFor="supabaseUrl" className="text-[var(--text-secondary)] flex items-center gap-2 text-sm font-medium">
                 <Globe className="w-4 h-4" />
                 Supabase URL
               </label>
@@ -427,11 +439,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.supabaseUrl}
                 onChange={(e) => handleApiKeyChange('supabaseUrl', e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="supabaseAnon" className="text-slate-300 text-sm font-medium">
+              <label htmlFor="supabaseAnon" className="text-[var(--text-secondary)] text-sm font-medium">
                 Supabase Anon Key
               </label>
               <input
@@ -440,11 +452,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.supabaseAnon}
                 onChange={(e) => handleApiKeyChange('supabaseAnon', e.target.value)}
                 placeholder="eyJ..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="supabaseService" className="text-slate-300 text-sm font-medium">
+              <label htmlFor="supabaseService" className="text-[var(--text-secondary)] text-sm font-medium">
                 Supabase Service Role Key
               </label>
               <input
@@ -453,11 +465,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.supabaseService}
                 onChange={(e) => handleApiKeyChange('supabaseService', e.target.value)}
                 placeholder="eyJ..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="googleMaps" className="text-slate-300 text-sm font-medium">
+              <label htmlFor="googleMaps" className="text-[var(--text-secondary)] text-sm font-medium">
                 Google Maps API Key
               </label>
               <input
@@ -466,11 +478,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.googleMaps}
                 onChange={(e) => handleApiKeyChange('googleMaps', e.target.value)}
                 placeholder="AIza..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="emailApi" className="text-slate-300 flex items-center gap-2 text-sm font-medium">
+              <label htmlFor="emailApi" className="text-[var(--text-secondary)] flex items-center gap-2 text-sm font-medium">
                 <Mail className="w-4 h-4" />
                 Email API Key
               </label>
@@ -480,11 +492,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.emailApi}
                 onChange={(e) => handleApiKeyChange('emailApi', e.target.value)}
                 placeholder="SG...."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="scrapingApi" className="text-slate-300 text-sm font-medium">
+              <label htmlFor="scrapingApi" className="text-[var(--text-secondary)] text-sm font-medium">
                 Scraping API Key
               </label>
               <input
@@ -493,11 +505,11 @@ export default function SystemSettingsPage() {
                 value={apiKeys.scrapingApi}
                 onChange={(e) => handleApiKeyChange('scrapingApi', e.target.value)}
                 placeholder="..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="automationApi" className="text-slate-300 flex items-center gap-2 text-sm font-medium">
+              <label htmlFor="automationApi" className="text-[var(--text-secondary)] flex items-center gap-2 text-sm font-medium">
                 <Zap className="w-4 h-4" />
                 Automation API Key
               </label>
@@ -507,20 +519,20 @@ export default function SystemSettingsPage() {
                 value={apiKeys.automationApi}
                 onChange={(e) => handleApiKeyChange('automationApi', e.target.value)}
                 placeholder="..."
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
+      <div className="bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Users className="w-5 h-5" />
             Workspace Access
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-muted)] text-sm mt-1">
             Invite teammates and manage roles for this workspace.
           </p>
         </div>
@@ -532,12 +544,12 @@ export default function SystemSettingsPage() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="teammate@company.com"
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member')}
-                className="px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -561,34 +573,34 @@ export default function SystemSettingsPage() {
           )}
 
           <div className="space-y-3">
-            <div className="text-sm font-medium text-slate-300">Members</div>
+            <div className="text-sm font-medium text-[var(--text-secondary)]">Members</div>
             {loadingMembers ? (
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                 <Loader2 className="w-4 h-4 animate-spin" />Loading members…
               </div>
             ) : members.length === 0 ? (
-              <div className="text-sm text-slate-500">No members yet.</div>
+              <div className="text-sm text-[var(--text-subtle)]">No members yet.</div>
             ) : (
               <div className="space-y-2">
                 {members.map((member) => (
-                  <div key={member.id} className="flex flex-col md:flex-row md:items-center gap-3 justify-between rounded-md border border-[#1e1e38] bg-[#111120] px-4 py-3">
+                  <div key={member.id} className="flex flex-col md:flex-row md:items-center gap-3 justify-between rounded-md border border-[var(--panel-border)] bg-[var(--panel-bg-muted)] px-4 py-3">
                     <div>
-                      <div className="text-sm font-medium text-white">{member.name}</div>
-                      <div className="text-xs text-slate-500">{member.email}</div>
+                      <div className="text-sm font-medium text-[var(--text-primary)]">{member.name}</div>
+                      <div className="text-xs text-[var(--text-subtle)]">{member.email}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       {(workspace.role === 'owner' || workspace.role === 'admin') ? (
                         <select
                           value={member.role}
                           onChange={(e) => updateMemberRole(member.id, e.target.value)}
-                          className="px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         >
                           <option value="owner">Owner</option>
                           <option value="admin">Admin</option>
                           <option value="member">Member</option>
                         </select>
                       ) : (
-                        <span className="text-xs text-slate-400 capitalize">{member.role}</span>
+                        <span className="text-xs text-[var(--text-muted)] capitalize">{member.role}</span>
                       )}
                       {(workspace.role === 'owner' || workspace.role === 'admin') && (
                         <button
@@ -607,16 +619,16 @@ export default function SystemSettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <div className="text-sm font-medium text-slate-300">Pending Invitations</div>
+            <div className="text-sm font-medium text-[var(--text-secondary)]">Pending Invitations</div>
             {invitations.length === 0 ? (
-              <div className="text-sm text-slate-500">No pending invitations.</div>
+              <div className="text-sm text-[var(--text-subtle)]">No pending invitations.</div>
             ) : (
               <div className="space-y-2">
                 {invitations.map((invite) => (
-                  <div key={invite.id} className="flex items-center justify-between rounded-md border border-[#1e1e38] bg-[#111120] px-4 py-3">
+                  <div key={invite.id} className="flex items-center justify-between rounded-md border border-[var(--panel-border)] bg-[var(--panel-bg-muted)] px-4 py-3">
                     <div>
-                      <div className="text-sm font-medium text-white">{invite.email}</div>
-                      <div className="text-xs text-slate-500 capitalize">{invite.role} • {invite.status}</div>
+                      <div className="text-sm font-medium text-[var(--text-primary)]">{invite.email}</div>
+                      <div className="text-xs text-[var(--text-subtle)] capitalize">{invite.role} • {invite.status}</div>
                     </div>
                     {(workspace.role === 'owner' || workspace.role === 'admin') && (
                       <button
@@ -636,67 +648,67 @@ export default function SystemSettingsPage() {
       </div>
 
       {/* User Account */}
-      <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
+      <div className="bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <User className="w-5 h-5" />
             User Account
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-muted)] text-sm mt-1">
             Manage your account information and security settings
           </p>
         </div>
         <div className="space-y-4">
           {loadingAccount && (
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
               <Loader2 className="w-4 h-4 animate-spin" />Loading account settings…
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-slate-300 text-sm font-medium">Full Name</label>
+              <label htmlFor="name" className="text-[var(--text-secondary)] text-sm font-medium">Full Name</label>
               <input
                 id="name"
                 value={userAccount.name}
                 onChange={(e) => handleUserChange('name', e.target.value)}
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-slate-300 text-sm font-medium">Email Address</label>
+              <label htmlFor="email" className="text-[var(--text-secondary)] text-sm font-medium">Email Address</label>
               <input
                 id="email"
                 type="email"
                 value={userAccount.email}
                 onChange={(e) => handleUserChange('email', e.target.value)}
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-slate-300 text-sm font-medium">New Password</label>
+              <label htmlFor="password" className="text-[var(--text-secondary)] text-sm font-medium">New Password</label>
               <input
                 id="password"
                 type="password"
                 value={userAccount.password}
                 onChange={(e) => handleUserChange('password', e.target.value)}
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="text-[var(--text-secondary)] text-sm font-medium">Confirm Password</label>
               <input
                 id="confirmPassword"
                 type="password"
                 value={userAccount.confirmPassword}
                 onChange={(e) => handleUserChange('confirmPassword', e.target.value)}
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
-          <hr className="border-[#1e1e38]" />
+          <hr className="border-[var(--panel-border)]" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label htmlFor="workspaceName" className="text-slate-300 text-sm font-medium flex items-center gap-2">
+              <label htmlFor="workspaceName" className="text-[var(--text-secondary)] text-sm font-medium flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
                 Workspace Name
               </label>
@@ -705,16 +717,16 @@ export default function SystemSettingsPage() {
                 value={workspace.name}
                 onChange={(e) => setWorkspace((prev) => ({ ...prev, name: e.target.value }))}
                 disabled={workspace.role !== 'owner' && workspace.role !== 'admin'}
-                className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white placeholder-slate-500 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] placeholder-[var(--text-subtle)] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="workspaceRole" className="text-slate-300 text-sm font-medium">Workspace Role</label>
+              <label htmlFor="workspaceRole" className="text-[var(--text-secondary)] text-sm font-medium">Workspace Role</label>
               <input
                 id="workspaceRole"
                 value={`${workspace.role} • ${workspace.slug}`}
                 disabled
-                className="w-full px-3 py-2 bg-[#151526] border border-[#2a2a4e] rounded-md text-slate-400"
+                className="w-full px-3 py-2 bg-[var(--input-bg-muted)] border border-[var(--input-border)] rounded-md text-[var(--text-muted)]"
               />
             </div>
           </div>
@@ -728,63 +740,63 @@ export default function SystemSettingsPage() {
               {accountMessage}
             </div>
           )}
-          <hr className="border-[#1e1e38]" />
-          <Button variant="outline" onClick={logout} className="border-[#2a2a4e] text-slate-300 hover:bg-[#1a1a2e]">
+          <hr className="border-[var(--panel-border)]" />
+          <Button variant="outline" onClick={logout}>
             Logout
           </Button>
         </div>
       </div>
 
       {/* System Preferences */}
-      <div className="bg-[#0f0f23] border border-[#1e1e38] rounded-lg p-6">
+      <div className="bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-lg p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <SettingsIcon className="w-5 h-5" />
             System Preferences
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-muted)] text-sm mt-1">
             Customize system behavior and appearance
           </p>
         </div>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <label className="text-slate-300 text-sm font-medium">Theme</label>
-              <p className="text-sm text-slate-500">Choose your preferred theme</p>
+              <label className="text-[var(--text-secondary)] text-sm font-medium">Theme</label>
+              <p className="text-sm text-[var(--text-subtle)]">Choose your preferred theme</p>
             </div>
             <select
               value={preferences.theme}
               onChange={(e) => handlePreferenceChange('theme', e.target.value as Preferences['theme'])}
-              className="w-32 px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-32 px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="light">Light</option>
               <option value="dark">Dark</option>
               <option value="system">System</option>
             </select>
           </div>
-          <hr className="border-[#1e1e38]" />
+          <hr className="border-[var(--panel-border)]" />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <label className="text-slate-300 text-sm font-medium">Email Notifications</label>
-              <p className="text-sm text-slate-500">Receive email notifications for important events</p>
+              <label className="text-[var(--text-secondary)] text-sm font-medium">Email Notifications</label>
+              <p className="text-sm text-[var(--text-subtle)]">Receive email notifications for important events</p>
             </div>
             <input
               type="checkbox"
               checked={preferences.notifications}
               onChange={(e) => handlePreferenceChange('notifications', e.target.checked)}
-              className="w-4 h-4 text-indigo-600 bg-[#1a1a2e] border-[#2a2a4e] rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-indigo-600 bg-[var(--input-bg)] border-[var(--input-border)] rounded focus:ring-indigo-500"
             />
           </div>
-          <hr className="border-[#1e1e38]" />
+          <hr className="border-[var(--panel-border)]" />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <label className="text-slate-300 text-sm font-medium">Data Retention</label>
-              <p className="text-sm text-slate-500">How long to keep historical data (days)</p>
+              <label className="text-[var(--text-secondary)] text-sm font-medium">Data Retention</label>
+              <p className="text-sm text-[var(--text-subtle)]">How long to keep historical data (days)</p>
             </div>
             <select
               value={preferences.dataRetention}
               onChange={(e) => handlePreferenceChange('dataRetention', e.target.value)}
-              className="w-32 px-3 py-2 bg-[#1a1a2e] border border-[#2a2a4e] rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-32 px-3 py-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="30">30 days</option>
               <option value="90">90 days</option>
