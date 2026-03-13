@@ -89,9 +89,9 @@ export function DashboardSidebar() {
   }
 
   return (
-    <aside className="w-[220px] min-h-screen bg-[color:color-mix(in_srgb,var(--shell-bg)_92%,#eef4ff_8%)] border-r border-[var(--panel-border)] flex flex-col shadow-[inset_-1px_0_0_rgba(148,163,184,0.08)]">
+    <aside className="flex min-h-screen w-[220px] flex-col border-r border-[var(--panel-border)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--shell-bg)_90%,#dbe4f3_10%)_0%,color-mix(in_srgb,var(--shell-bg)_84%,#cbd5e1_16%)_100%)] shadow-[inset_-1px_0_0_rgba(148,163,184,0.10)]">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-[var(--panel-border)] bg-[color:color-mix(in_srgb,var(--panel-bg)_82%,transparent_18%)]">
+      <div className="flex h-16 items-center border-b border-[var(--panel-border)] bg-[rgba(255,255,255,0.34)] px-5 backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <Zap className="w-4 h-4 text-white" strokeWidth={2.5} />
@@ -105,7 +105,7 @@ export function DashboardSidebar() {
 
       {/* AI Status Pill */}
       <div className="px-4 py-4">
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 shadow-sm">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/18 bg-[linear-gradient(90deg,rgba(16,185,129,0.10),rgba(34,211,238,0.08))] px-3 py-2.5 shadow-sm">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs font-medium text-emerald-400">AI Engine Running</span>
           <Sparkles className="w-3 h-3 text-emerald-400 ml-auto" />
@@ -130,7 +130,7 @@ export function DashboardSidebar() {
                   className={cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                     parentActive
-                      ? 'bg-gradient-to-r from-indigo-500/18 to-violet-500/14 text-indigo-400 border border-indigo-500/25 shadow-[0_10px_24px_rgba(99,102,241,0.10)]'
+                      ? 'border border-indigo-400/30 bg-[linear-gradient(90deg,rgba(99,102,241,0.16),rgba(168,85,247,0.10))] text-indigo-500 shadow-[0_10px_24px_rgba(99,102,241,0.12)]'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]',
                   )}
                 >

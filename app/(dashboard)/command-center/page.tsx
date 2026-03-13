@@ -209,9 +209,9 @@ export default function CommandCenterPage() {
             ].map((metric) => (
               <div
                 key={metric.label}
-                className="rounded-2xl border border-[var(--panel-border)] bg-[color:color-mix(in_srgb,var(--panel-bg)_88%,white_12%)] px-4 py-3.5"
+                className="rounded-2xl border border-[var(--panel-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.52)_0%,rgba(255,255,255,0.26)_100%)] px-4 py-3.5 backdrop-blur-sm"
               >
-                <div className={`mb-3 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/60 ${metric.tone}`}>
+                <div className={`mb-3 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/70 ${metric.tone}`}>
                   {metric.icon}
                 </div>
                 <div className={`text-2xl font-semibold ${metric.tone}`}>{metric.value}</div>

@@ -12,12 +12,12 @@ interface KpiCardProps {
 }
 
 const colorMap = {
-  indigo:  { icon: 'bg-indigo-500/15 text-indigo-400', glow: 'shadow-indigo-500/10' },
-  emerald: { icon: 'bg-emerald-500/15 text-emerald-400', glow: 'shadow-emerald-500/10' },
-  violet:  { icon: 'bg-violet-500/15 text-violet-400', glow: 'shadow-violet-500/10' },
-  amber:   { icon: 'bg-amber-500/15 text-amber-400', glow: 'shadow-amber-500/10' },
-  red:     { icon: 'bg-red-500/15 text-red-400', glow: 'shadow-red-500/10' },
-  blue:    { icon: 'bg-blue-500/15 text-blue-400', glow: 'shadow-blue-500/10' },
+  indigo:  { icon: 'bg-indigo-500/15 text-indigo-500', glow: 'shadow-indigo-500/10', panel: 'bg-[linear-gradient(180deg,rgba(99,102,241,0.10)_0%,rgba(255,255,255,0.70)_100%)] border-indigo-200/70' },
+  emerald: { icon: 'bg-emerald-500/15 text-emerald-500', glow: 'shadow-emerald-500/10', panel: 'bg-[linear-gradient(180deg,rgba(16,185,129,0.10)_0%,rgba(255,255,255,0.72)_100%)] border-emerald-200/80' },
+  violet:  { icon: 'bg-violet-500/15 text-violet-500', glow: 'shadow-violet-500/10', panel: 'bg-[linear-gradient(180deg,rgba(168,85,247,0.10)_0%,rgba(255,255,255,0.72)_100%)] border-violet-200/80' },
+  amber:   { icon: 'bg-amber-500/15 text-amber-500', glow: 'shadow-amber-500/10', panel: 'bg-[linear-gradient(180deg,rgba(245,158,11,0.10)_0%,rgba(255,255,255,0.74)_100%)] border-amber-200/80' },
+  red:     { icon: 'bg-red-500/15 text-red-500', glow: 'shadow-red-500/10', panel: 'bg-[linear-gradient(180deg,rgba(239,68,68,0.10)_0%,rgba(255,255,255,0.74)_100%)] border-red-200/80' },
+  blue:    { icon: 'bg-sky-500/15 text-sky-500', glow: 'shadow-sky-500/10', panel: 'bg-[linear-gradient(180deg,rgba(14,165,233,0.10)_0%,rgba(255,255,255,0.72)_100%)] border-sky-200/80' },
 }
 
 export function KpiCard({ title, value, change, changeLabel, icon, color = 'indigo' }: KpiCardProps) {
@@ -27,7 +27,8 @@ export function KpiCard({ title, value, change, changeLabel, icon, color = 'indi
   return (
     <div
       className={cn(
-        'bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel-bg-muted)_94%,white_6%)_0%,color-mix(in_srgb,var(--panel-bg)_92%,transparent_8%)_100%)] border border-[var(--panel-border)] rounded-2xl p-5 hover:border-[color:color-mix(in_srgb,var(--panel-border)_75%,#6366f1_25%)] transition-all duration-200 shadow-[0_18px_40px_rgba(15,23,42,0.06)]',
+        'border rounded-2xl p-5 hover:border-[color:color-mix(in_srgb,var(--panel-border)_75%,#6366f1_25%)] transition-all duration-200 shadow-[0_18px_40px_rgba(15,23,42,0.06)]',
+        colors.panel,
         colors.glow,
       )}
     >
@@ -39,8 +40,8 @@ export function KpiCard({ title, value, change, changeLabel, icon, color = 'indi
           className={cn(
             'flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full',
             isPositive
-              ? 'bg-emerald-500/10 text-emerald-400'
-              : 'bg-red-500/10 text-red-400',
+              ? 'bg-emerald-500/12 text-emerald-500'
+              : 'bg-red-500/12 text-red-500',
           )}
         >
           {isPositive ? (

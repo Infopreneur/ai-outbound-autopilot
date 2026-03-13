@@ -7,21 +7,21 @@
 
 :root,
 html.light {
-  --app-bg: #f4f7fb;
-  --shell-bg: #ffffff;
-  --panel-bg: #ffffff;
-  --panel-bg-muted: #eef2ff;
-  --panel-bg-subtle: #f8fafc;
-  --panel-border: #d7deea;
-  --input-bg: #ffffff;
-  --input-bg-muted: #f3f6fb;
-  --input-border: #c8d2e3;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
+  --app-bg: #e8edf4;
+  --shell-bg: #edf1f7;
+  --panel-bg: #f7f9fc;
+  --panel-bg-muted: #eef2f7;
+  --panel-bg-subtle: #f2f5fa;
+  --panel-border: #d2dae6;
+  --input-bg: #fbfcfe;
+  --input-bg-muted: #f1f4f9;
+  --input-border: #c7d2e1;
+  --text-primary: #152033;
+  --text-secondary: #39485d;
   --text-muted: #64748b;
-  --text-subtle: #94a3b8;
-  --hover-bg: rgba(15, 23, 42, 0.04);
-  --scrollbar-thumb: #c5cfdf;
+  --text-subtle: #8c99ad;
+  --hover-bg: rgba(81, 95, 122, 0.07);
+  --scrollbar-thumb: #bcc7d8;
 }
 
 html.dark {
@@ -51,7 +51,10 @@ html {
 }
 
 body {
-  background-color: var(--app-bg);
+  background:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.07), transparent 24%),
+    linear-gradient(180deg, color-mix(in srgb, var(--app-bg) 92%, white 8%) 0%, var(--app-bg) 100%);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

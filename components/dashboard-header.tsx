@@ -65,7 +65,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="h-16 border-b border-[var(--panel-border)] bg-[color:color-mix(in_srgb,var(--app-bg)_78%,white_22%)]/90 backdrop-blur-xl flex items-center px-6 gap-4 sticky top-0 z-20 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
+    <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-[var(--panel-border)] bg-[rgba(236,241,247,0.88)] px-6 backdrop-blur-xl shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm flex-1">
         <span className="text-[var(--text-subtle)] text-xs">AI Autopilot</span>
@@ -79,7 +79,7 @@ export function DashboardHeader() {
         <input
           type="text"
           placeholder="Search leads, companies, deals…"
-          className="w-72 h-10 pl-9 pr-12 bg-[color:color-mix(in_srgb,var(--panel-bg)_88%,white_12%)] border border-[var(--panel-border)] rounded-xl text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 transition-colors"
+          className="h-10 w-72 rounded-xl border border-[var(--panel-border)] bg-[rgba(255,255,255,0.64)] pl-9 pr-12 text-sm text-[var(--text-secondary)] placeholder-[var(--text-subtle)] transition-colors focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10"
         />
         <kbd className="absolute right-3 text-[10px] text-[var(--text-subtle)] font-medium">⌘K</kbd>
       </div>
@@ -90,7 +90,7 @@ export function DashboardHeader() {
           <select
             value={account.id}
             onChange={(e) => switchAccount(e.target.value)}
-            className="h-10 max-w-[240px] px-3 bg-[color:color-mix(in_srgb,var(--panel-bg)_88%,white_12%)] border border-[var(--panel-border)] rounded-xl text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
+            className="h-10 max-w-[240px] rounded-xl border border-[var(--panel-border)] bg-[rgba(255,255,255,0.64)] px-3 text-sm text-[var(--text-secondary)] focus:outline-none focus:border-indigo-500/50"
           >
             {memberships.map((membership) => (
               <option key={membership.accountId} value={membership.accountId}>
