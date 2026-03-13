@@ -233,7 +233,7 @@ ALTER TABLE companies
 | `/pipeline` | Sales pipeline |
 | `/system-health` | API usage + cost tracking |
 
-**Pages still using mock data:** `/companies/[id]`, `/pipeline`, `/outreach`, `/demo-studio`
+**Pages still using mock data:** `/companies/[id]`, `/pipeline`, `/demo-studio`
 
 ---
 

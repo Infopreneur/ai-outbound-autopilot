@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Play,
   Pause,
@@ -20,8 +20,23 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { mockCampaigns } from '@/lib/mock-data'
-import type { CampaignStatus } from '@/lib/mock-data'
+
+// types
+export type CampaignStatus = 'active' | 'paused' | 'draft' | 'completed'
+export interface Campaign {
+  id: string
+  name: string
+  status: CampaignStatus
+  channel: 'email' | 'linkedin' | 'multi-channel'
+  leads: number
+  sent: number
+  opened: number
+  replied: number
+  meetings: number
+  open_rate: number
+  reply_rate: number
+  start_date: string
+}
 
 const channelIcon: Record<string, React.ReactNode> = {
   email:          <Mail className="w-3.5 h-3.5" />,
@@ -38,16 +53,34 @@ const sequenceSteps = [
 ]
 
 export default function OutreachPage() {
-  const [selectedCampaign, setSelectedCampaign] = useState(mockCampaigns[0])
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
+  // ensure we don't crash before data arrives
+  const activeCampaign = selectedCampaign || {
+    id: '', name: '', status: 'draft' as CampaignStatus, channel: 'email' as const,
+    leads: 0, sent: 0, opened: 0, replied: 0, meetings: 0,
+    open_rate: 0, reply_rate: 0, start_date: ''
+  }
   const [statusFilter, setStatusFilter] = useState<string>('All')
 
-  const filtered = mockCampaigns.filter(
+  useEffect(() => {
+    fetch('/api/outreach/campaigns')
+      .then((r) => r.json())
+      .then((data: Campaign[]) => {
+        setCampaigns(data)
+        if (data.length > 0) setSelectedCampaign(data[0])
+      })
+      .catch((e) => console.error('fetch campaigns', e))
+  }, [])
+
+  const filtered = campaigns.filter(
     (c) => statusFilter === 'All' || c.status === statusFilter,
   )
 
-  const totalSent    = mockCampaigns.reduce((s, c) => s + c.sent, 0)
-  const totalReplies = mockCampaigns.reduce((s, c) => s + c.replied, 0)
-  const totalMtgs    = mockCampaigns.reduce((s, c) => s + c.meetings, 0)
+  const totalSent    = campaigns.reduce((s, c) => s + c.sent, 0)
+  const totalReplies = campaigns.reduce((s, c) => s + c.replied, 0)
+  const totalMtgs    = campaigns.reduce((s, c) => s + c.meetings, 0)
+  const avgOpenRate  = totalSent > 0 ? campaigns.reduce((sum, c) => sum + c.open_rate * c.sent, 0) / totalSent : 0
 
   return (
     <div className="max-w-[1400px] space-y-5">
@@ -55,7 +88,7 @@ export default function OutreachPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Emails Sent',    value: totalSent.toLocaleString(),    icon: <Send className="w-4 h-4" />,           color: 'text-blue-400   bg-blue-500/10' },
-          { label: 'Avg Open Rate',  value: '52.6%',                       icon: <Eye className="w-4 h-4" />,            color: 'text-indigo-400 bg-indigo-500/10' },
+          { label: 'Avg Open Rate',  value: `${avgOpenRate.toFixed(1)}%`,    icon: <Eye className="w-4 h-4" />,            color: 'text-indigo-400 bg-indigo-500/10' },
           { label: 'Total Replies',  value: totalReplies.toString(),        icon: <MessageSquare className="w-4 h-4" />, color: 'text-violet-400 bg-violet-500/10' },
           { label: 'Meetings Booked', value: totalMtgs.toString(),          icon: <Calendar className="w-4 h-4" />,      color: 'text-emerald-400 bg-emerald-500/10' },
         ].map((stat) => (
@@ -111,7 +144,7 @@ export default function OutreachPage() {
                     key={campaign.id}
                     onClick={() => setSelectedCampaign(campaign)}
                     className={`cursor-pointer transition-colors ${
-                      selectedCampaign.id === campaign.id
+                      activeCampaign.id === campaign.id
                         ? 'bg-indigo-500/5'
                         : 'hover:bg-white/[0.02]'
                     }`}
@@ -133,17 +166,17 @@ export default function OutreachPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-16">
-                          <Progress value={campaign.openRate} max={100} barClassName="bg-indigo-500" />
+                          <Progress value={campaign.open_rate} max={100} barClassName="bg-indigo-500" />
                         </div>
-                        <span className="text-xs text-slate-400">{campaign.openRate}%</span>
+                        <span className="text-xs text-slate-400">{campaign.open_rate}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-16">
-                          <Progress value={campaign.replyRate} max={100} barClassName="bg-violet-500" />
+                          <Progress value={campaign.reply_rate} max={100} barClassName="bg-violet-500" />
                         </div>
-                        <span className="text-xs text-slate-400">{campaign.replyRate}%</span>
+                        <span className="text-xs text-slate-400">{campaign.reply_rate}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -181,10 +214,10 @@ export default function OutreachPage() {
           <div className="bg-[#111120] border border-[#1e1e38] rounded-xl p-5">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-white">{selectedCampaign.name}</h3>
+                <h3 className="text-sm font-bold text-white">{activeCampaign.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant={selectedCampaign.status as CampaignStatus}>{selectedCampaign.status}</Badge>
-                  <span className="text-xs text-slate-600">Started {selectedCampaign.startDate}</span>
+                  <Badge variant={activeCampaign.status as CampaignStatus}>{activeCampaign.status}</Badge>
+                  <span className="text-xs text-slate-600">Started {activeCampaign.start_date}</span>
                 </div>
               </div>
               <Button variant="ghost" size="sm">
@@ -194,9 +227,9 @@ export default function OutreachPage() {
 
             <div className="grid grid-cols-3 gap-3 mb-4">
               {[
-                { label: 'Sent',    value: selectedCampaign.sent },
-                { label: 'Opened',  value: selectedCampaign.opened },
-                { label: 'Replied', value: selectedCampaign.replied },
+                { label: 'Sent',    value: activeCampaign.sent },
+                { label: 'Opened',  value: activeCampaign.opened },
+                { label: 'Replied', value: activeCampaign.replied },
               ].map((s) => (
                 <div key={s.label} className="bg-[#1a1a30] border border-[#252540] rounded-lg p-3 text-center">
                   <div className="text-lg font-bold text-white">{s.value}</div>
@@ -206,12 +239,12 @@ export default function OutreachPage() {
             </div>
 
             {/* Funnel */}
-            {selectedCampaign.sent > 0 && (
+            {activeCampaign.sent > 0 && (
               <div className="space-y-2">
                 {[
-                  { label: 'Open rate',  value: selectedCampaign.openRate,  color: 'bg-indigo-500' },
-                  { label: 'Reply rate', value: selectedCampaign.replyRate, color: 'bg-violet-500' },
-                  { label: 'Meeting rate', value: selectedCampaign.meetings ? (selectedCampaign.meetings / selectedCampaign.sent * 100) : 0, color: 'bg-emerald-500' },
+                  { label: 'Open rate',  value: activeCampaign.open_rate,  color: 'bg-indigo-500' },
+                  { label: 'Reply rate', value: activeCampaign.reply_rate, color: 'bg-violet-500' },
+                  { label: 'Meeting rate', value: activeCampaign.meetings ? (activeCampaign.meetings / activeCampaign.sent * 100) : 0, color: 'bg-emerald-500' },
                 ].map((m) => (
                   <div key={m.label}>
                     <div className="flex justify-between text-xs text-slate-500 mb-1">

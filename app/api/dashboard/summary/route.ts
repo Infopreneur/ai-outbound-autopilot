@@ -37,11 +37,17 @@ export async function GET() {
       .select('id', { head: true, count: 'exact' })
       .gte('created_at', thirtyDaysAgo)
 
+    // active campaigns count
+    const { count: activeCampaignsCount } = await supabaseAdmin
+      .from('campaigns')
+      .select('id', { head: true, count: 'exact' })
+      .eq('status', 'active')
+
     return NextResponse.json({
       kpis: {
         totalLeads: totalLeads ?? 0,
         meetingsBooked: 0,
-        activeCampaigns: 0,
+        activeCampaigns: activeCampaignsCount ?? 0,
         pipelineValue: 0,
       },
       recentProspects: recentProspects ?? [],
