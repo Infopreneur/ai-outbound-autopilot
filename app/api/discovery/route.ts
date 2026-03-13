@@ -11,7 +11,7 @@
  *   city?:       "Phoenix"
  *   state?:      "AZ"
  *   maxResults?: 50
- *   industry?:   "roofing"   ← drives multi-keyword for google-places
+ *   industry?:   "roofing"
  * }
  */
 console.log("DISCOVERY ROOT ROUTE HIT")
@@ -20,9 +20,71 @@ import { runGooglePlacesDiscovery }           from '@/lib/discovery/google-place
 import { runApifySource }                     from '@/lib/discovery/sources/apify'
 import { logUsage }                           from '@/lib/usage/cost-tracker'
 import { supabaseAdmin }                      from '@/lib/supabase/server'
+import { scoreOpportunity }                   from '@/lib/scoring/opportunity-score'
+import type { NormalizedCompanyLead }         from '@/lib/discovery/types'
 import type { DiscoveryRunParams, JobSource } from '@/lib/discovery/types'
 
 const VALID_SOURCES: JobSource[] = ['google-places', 'apify', 'maps', 'yelp', 'manual']
+
+// ── Shared helper: score + build upsert rows ──────────────────────────────────
+function buildScoredRows(leads: NormalizedCompanyLead[], niche: string, source: string) {
+  const now = new Date().toISOString()
+  return leads.map((l) => {
+    const s = scoreOpportunity({
+      name:         l.name,
+      niche,
+      website:      l.website      ?? null,
+      phone:        l.phone        ?? null,
+      city:         l.city         ?? null,
+      state:        l.state        ?? null,
+      rating:       l.rating       ?? null,
+      review_count: l.reviewCount  ?? null,
+    })
+    return {
+      name:                   l.name,
+      website:                l.website      ?? null,
+      phone:                  l.phone        ?? null,
+      city:                   l.city         ?? null,
+      state:                  l.state        ?? null,
+      place_id:               l.placeId      ?? null,
+      rating:                 l.rating       ?? null,
+      review_count:           l.reviewCount  ?? null,
+      niche,
+      source,
+      // ── scores ─────────────────────────────────────────────────────
+      opportunity_score:      s.totalScore,
+      opportunity_tier:       s.tier,
+      opportunity_reason:     s.reason,
+      recommended_offer:      s.recommendedOffer,
+      recommended_next_step:  s.recommendedNextStep,
+      lead_volume_score:      s.leadVolumeScore,
+      followup_gap_score:     s.followupGapScore,
+      local_visibility_score: s.localVisibilityScore,
+      offer_fit_score:        s.offerFitScore,
+      scored_reason: {
+        lead_volume:      s.leadVolumeScore,
+        followup_gap:     s.followupGapScore,
+        local_visibility: s.localVisibilityScore,
+        offer_fit:        s.offerFitScore,
+        total:            s.totalScore,
+        reason:           s.reason,
+      },
+      last_scored_at:         now,
+      last_discovered_at:     now,
+    }
+  })
+}
+
+// ── Count how many place_ids already exist ────────────────────────────────────
+async function countExisting(placeIds: (string | null)[]): Promise<number> {
+  const ids = placeIds.filter(Boolean) as string[]
+  if (ids.length === 0) return 0
+  const { count } = await supabaseAdmin
+    .from('companies')
+    .select('id', { count: 'exact', head: true })
+    .in('place_id', ids)
+  return count ?? 0
+}
 
 export async function POST(req: Request) {
   console.log('🎯 POST /api/discovery HIT')
@@ -50,10 +112,10 @@ export async function POST(req: Request) {
   const params: DiscoveryRunParams = {
     source,
     niche:      niche.trim(),
-    city:       typeof city     === 'string' ? city.trim()     : undefined,
-    state:      typeof state    === 'string' ? state.trim()    : undefined,
+    city:       typeof city     === 'string' ? city.trim()  : undefined,
+    state:      typeof state    === 'string' ? state.trim() : undefined,
     maxResults: Math.min(Number(maxResults ?? 20), 200),
-    industry:   typeof industry === 'string' ? industry        : undefined,
+    industry:   typeof industry === 'string' ? industry     : undefined,
   }
 
   try {
@@ -61,191 +123,130 @@ export async function POST(req: Request) {
 
       case 'google-places':
       case 'maps': {
-        const startedAt = new Date().toISOString()
-        const result    = await runGooglePlacesDiscovery(params)
+        const startedAt   = new Date().toISOString()
+        const result      = await runGooglePlacesDiscovery(params)
         const completedAt = new Date().toISOString()
 
-        // ── Upsert companies (conflict on place_id) ──────────────────────
+        let insertedCount = 0
+        let updatedCount  = 0
+        let hotCount      = 0
+
         if (result.leads.length > 0) {
-          console.log(`[discovery/route] upserting ${result.leads.length} companies to Supabase…`)
+          const rows = buildScoredRows(result.leads, params.niche, 'google-native')
+          hotCount = rows.filter((r) => r.opportunity_tier === 'hot').length
+
+          // Count pre-existing to calculate inserted vs updated
+          const existing = await countExisting(result.leads.map((l) => l.placeId ?? null))
+          insertedCount  = result.leads.length - existing
+          updatedCount   = existing
+
+          console.log(`[discovery/route] upserting ${rows.length} companies (${insertedCount} new, ${updatedCount} updated)…`)
 
           const { error: companyErr } = await supabaseAdmin
             .from('companies')
-            .upsert(
-              result.leads.map((l) => ({
-                name:         l.name,
-                website:      l.website      ?? null,
-                phone:        l.phone        ?? null,
-                city:         l.city         ?? null,
-                state:        l.state        ?? null,
-                place_id:     l.placeId      ?? null,
-                rating:       l.rating       ?? null,
-                review_count: l.reviewCount  ?? null,
-                niche:        params.niche,
-                source:       'google-native',
-              })),
-              { onConflict: 'place_id', ignoreDuplicates: true },
-            )
+            .upsert(rows, { onConflict: 'place_id' })
 
           if (companyErr) {
-            console.error('[discovery/route] ❌ companies upsert FAILED')
-            console.error('  message:', companyErr.message)
-            console.error('  code:   ', companyErr.code)
-            console.error('  details:', companyErr.details)
-            console.error('  hint:   ', companyErr.hint)
+            console.error('[discovery/route] ❌ companies upsert FAILED', companyErr.message)
           } else {
-            console.log(`[discovery/route] ✅ companies upsert OK — ${result.leads.length} rows`)
+            console.log(`[discovery/route] ✅ upsert OK — ${insertedCount} new, ${updatedCount} updated, ${hotCount} hot`)
           }
 
-          // ── Persist raw scraper payloads ───────────────────────────────────
+          // Raw audit trail
           const { error: rawErr } = await supabaseAdmin
             .from('scrape_results_raw')
-            .insert(
-              result.leads.map((l) => ({
-                source:      'maps',
-                external_id: l.placeId ?? null,
-                raw_payload: {
-                  name:         l.name,
-                  place_id:     l.placeId,
-                  address:      l.address,
-                  phone:        l.phone,
-                  website:      l.website,
-                  rating:       l.rating,
-                  review_count: l.reviewCount,
-                  city:         l.city,
-                  state:        l.state,
-                },
-              })),
-            )
-          if (rawErr) console.error('[discovery/route] scrape_results_raw insert:', rawErr.message)
+            .insert(result.leads.map((l) => ({
+              source:      'maps',
+              external_id: l.placeId ?? null,
+              raw_payload: { name: l.name, place_id: l.placeId, address: l.address, phone: l.phone, website: l.website, rating: l.rating, review_count: l.reviewCount, city: l.city, state: l.state },
+            })))
+          if (rawErr) console.error('[discovery/route] scrape_results_raw:', rawErr.message)
         }
 
-        // ── Insert discovery_jobs row ─────────────────────────────────────
-        console.log(`[discovery/route] inserting discovery_jobs row — niche="${params.niche}" city="${params.city}"`)
-
-        const { data: jobData, error: jobErr } = await supabaseAdmin
-          .from('discovery_jobs')
-          .insert({
-            name:          `${params.niche}${params.city ? ` — ${params.city}` : ''}`,
-            source:        'google-native',
-            niche:         params.niche,
-            city:          params.city    ?? null,
-            state:         params.state   ?? null,
-            status:        'completed',
-            results_count: result.leads.length,
-          })
-          .select()
-
-        if (jobErr) {
-          console.error('[discovery/route] ❌ discovery_jobs insert FAILED')
-          console.error('  message:', jobErr.message)
-          console.error('  code:   ', jobErr.code)
-          console.error('  details:', jobErr.details)
-          console.error('  hint:   ', jobErr.hint)
-        } else {
-          console.log('[discovery/route] ✅ discovery_jobs insert OK:', jobData)
-        }
-
-        // ── Log usage ─────────────────────────────────────────────────────
-        logUsage({
-          provider:     'google',
-          service:      'maps-places-api',
-          feature:      'lead-discovery',
-          input_units:  result.keywords.length,
-          output_units: result.leads.length,
-          status:       'success',
-          metadata:     { source, city, state, usedFallback: result.usedFallback },
+        // discovery_jobs record
+        await supabaseAdmin.from('discovery_jobs').insert({
+          name:          `${params.niche}${params.city ? ` — ${params.city}` : ''}`,
+          source:        'google-native',
+          niche:         params.niche,
+          city:          params.city  ?? null,
+          state:         params.state ?? null,
+          status:        'completed',
+          results_count: result.leads.length,
         })
 
+        logUsage({
+          provider: 'google', service: 'maps-places-api', feature: 'lead-discovery',
+          input_units: result.keywords.length, output_units: result.leads.length,
+          status: 'success', metadata: { source, city, state, usedFallback: result.usedFallback },
+        })
+
+        const topScored = [...result.leads]
+          .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+          .slice(0, 3)
+          .map((l) => ({ name: l.name, city: l.city, rating: l.rating }))
+
         return NextResponse.json({
+          count:         result.leads.length,
+          insertedCount,
+          updatedCount,
+          hotCount,
+          topScored,
           job: {
-            id:              result.jobId,
-            source,
-            status:          'completed',
-            niche:           params.niche,
-            city:            params.city ?? null,
-            state:           params.state ?? null,
-            maxResults:      params.maxResults,
-            resultsFound:    result.leads.length,
-            leadsNormalized: result.leads.length,
-            costEstimate:    result.estimatedCost,
-            keywords:        result.keywords,
-            usedFallback:    result.usedFallback,
-            startedAt,
-            completedAt,
+            id: result.jobId, source, status: 'completed',
+            niche: params.niche, city: params.city ?? null, state: params.state ?? null,
+            costEstimate: result.estimatedCost, keywords: result.keywords,
+            usedFallback: result.usedFallback, startedAt, completedAt,
           },
-          leads: result.leads,
-          count: result.leads.length,
         })
       }
 
       case 'apify': {
         const result = await runApifySource(params)
 
-        // ── Upsert companies ──────────────────────────────────────────────
+        let insertedCount = 0
+        let updatedCount  = 0
+        let hotCount      = 0
+
         if (result.leads.length > 0) {
+          const rows = buildScoredRows(result.leads, params.niche, 'apify')
+          hotCount = rows.filter((r) => r.opportunity_tier === 'hot').length
+
+          const existing = await countExisting(result.leads.map((l) => l.placeId ?? null))
+          insertedCount  = result.leads.length - existing
+          updatedCount   = existing
+
           const { error: companyErr } = await supabaseAdmin
             .from('companies')
-            .upsert(
-              result.leads.map((l) => ({
-                name:         l.name,
-                website:      l.website      ?? null,
-                phone:        l.phone        ?? null,
-                city:         l.city         ?? null,
-                state:        l.state        ?? null,
-                place_id:     l.placeId      ?? null,
-                rating:       l.rating       ?? null,
-                review_count: l.reviewCount  ?? null,
-                niche:        params.niche,
-                source:       'apify',
-              })),
-              { onConflict: 'place_id', ignoreDuplicates: true },
-            )
+            .upsert(rows, { onConflict: 'place_id' })
           if (companyErr) console.error('[apify] companies upsert:', companyErr.message)
-          else console.log(`[apify] ✅ companies upsert OK — ${result.leads.length} rows`)
+          else console.log(`[apify] ✅ upsert OK — ${insertedCount} new, ${updatedCount} updated`)
         }
 
         logUsage({
-          provider:     'apify',
-          service:      'google-maps-scraper',
-          feature:      'lead-discovery',
-          input_units:  0,
-          output_units: result.leads.length,
-          status:       'success',
-          metadata:     { source, city, state },
+          provider: 'apify', service: 'google-maps-scraper', feature: 'lead-discovery',
+          input_units: 0, output_units: result.leads.length,
+          status: 'success', metadata: { source, city, state },
         })
 
         return NextResponse.json({
+          count:         result.leads.length,
+          insertedCount,
+          updatedCount,
+          hotCount,
           job: {
-            id:              result.runId,
-            source,
-            status:          'completed',
-            niche:           params.niche,
-            city:            params.city ?? null,
-            state:           params.state ?? null,
-            maxResults:      params.maxResults,
-            resultsFound:    result.leads.length,
-            leadsNormalized: result.leads.length,
-            costEstimate:    result.estimatedCost,
-            startedAt:       new Date().toISOString(),
-            completedAt:     new Date().toISOString(),
+            id: result.runId, source, status: 'completed',
+            niche: params.niche, city: params.city ?? null, state: params.state ?? null,
+            costEstimate: result.estimatedCost,
+            startedAt: new Date().toISOString(), completedAt: new Date().toISOString(),
           },
-          leads: result.leads,
-          count: result.leads.length,
         })
       }
 
       case 'yelp':
-        return NextResponse.json(
-          { error: 'Yelp (ScraperAPI) discovery is not yet implemented.' },
-          { status: 501 },
-        )
+        return NextResponse.json({ error: 'Yelp (ScraperAPI) discovery is not yet implemented.' }, { status: 501 })
 
       case 'manual':
-        return NextResponse.json(
-          { error: 'Manual entry does not use the discovery API.' },
-          { status: 400 },
-        )
+        return NextResponse.json({ error: 'Manual entry does not use the discovery API.' }, { status: 400 })
 
       default:
         return NextResponse.json({ error: 'Unknown source.' }, { status: 400 })
