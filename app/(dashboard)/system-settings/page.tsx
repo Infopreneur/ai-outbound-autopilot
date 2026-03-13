@@ -6,23 +6,51 @@ import { Key, User, Settings as SettingsIcon, Mail, Globe, Bot, Zap } from 'luci
 
 export default function SystemSettingsPage() {
   // API Keys
-  const [apiKeys, setApiKeys] = useState({
-    anthropic: '',
-    supabaseUrl: '',
-    supabaseAnon: '',
-    supabaseService: '',
-    googleMaps: '',
-    emailApi: '',
-    scrapingApi: '',
-    automationApi: '',
+  interface ApiKeys {
+    anthropic: string
+    supabaseUrl: string
+    supabaseAnon: string
+    supabaseService: string
+    googleMaps: string
+    emailApi: string
+    scrapingApi: string
+    automationApi: string
+  }
+
+  const [apiKeys, setApiKeys] = useState<ApiKeys>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('apiKeys') : null
+    if (saved) {
+      try {
+        return JSON.parse(saved) as ApiKeys
+      } catch {}
+    }
+    return {
+      anthropic: '',
+      supabaseUrl: '',
+      supabaseAnon: '',
+      supabaseService: '',
+      googleMaps: '',
+      emailApi: '',
+      scrapingApi: '',
+      automationApi: '',
+    }
   })
 
   // User Account
-  const [userAccount, setUserAccount] = useState({
-    name: 'Alex Kim',
-    email: 'alex@company.com',
-    password: '',
-    confirmPassword: '',
+  interface UserAccount {
+    name: string
+    email: string
+    password: string
+    confirmPassword: string
+  }
+  const [userAccount, setUserAccount] = useState<UserAccount>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('userAccount') : null
+    if (saved) {
+      try {
+        return JSON.parse(saved) as UserAccount
+      } catch {}
+    }
+    return { name: 'Alex Kim', email: 'alex@company.com', password: '', confirmPassword: '' }
   })
 
   // System Preferences
@@ -62,12 +90,20 @@ export default function SystemSettingsPage() {
     localStorage.setItem('preferences', JSON.stringify(preferences))
   }, [preferences])
 
-  const handleApiKeyChange = (key: string, value: string) => {
-    setApiKeys(prev => ({ ...prev, [key]: value }))
+  const handleApiKeyChange = (key: keyof ApiKeys, value: string) => {
+    setApiKeys((prev) => {
+      const next = { ...prev, [key]: value }
+      if (typeof window !== 'undefined') localStorage.setItem('apiKeys', JSON.stringify(next))
+      return next
+    })
   }
 
-  const handleUserChange = (key: string, value: string) => {
-    setUserAccount(prev => ({ ...prev, [key]: value }))
+  const handleUserChange = (key: keyof UserAccount, value: string) => {
+    setUserAccount((prev) => {
+      const next = { ...prev, [key]: value }
+      if (typeof window !== 'undefined') localStorage.setItem('userAccount', JSON.stringify(next))
+      return next
+    })
   }
 
   const handlePreferenceChange = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
@@ -75,7 +111,13 @@ export default function SystemSettingsPage() {
   }
 
   const saveSettings = () => {
-    // In a real app, this would save to backend
+    // persist to localStorage as well
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('apiKeys', JSON.stringify(apiKeys))
+      localStorage.setItem('userAccount', JSON.stringify(userAccount))
+      localStorage.setItem('preferences', JSON.stringify(preferences))
+    }
+
     alert('Settings saved! (This is a demo - in production, this would update your backend)')
     console.log('API Keys:', apiKeys)
     console.log('User Account:', userAccount)
