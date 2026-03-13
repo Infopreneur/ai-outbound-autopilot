@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
 
 const systemItems = [
   { href: '/system-health', icon: Activity, label: 'System Health' },
+  { href: '/system-settings', icon: Settings, label: 'System Settings' },
 ]
 
 // ── Components ────────────────────────────────────────────────────────────────
@@ -167,27 +168,6 @@ export function DashboardSidebar() {
           ))}
         </div>
       </nav>
-
-      {/* Bottom */}
-      <div className="p-3 border-t border-[#1e1e38] space-y-1">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-200 hover:bg-white/[0.04] transition-colors"
-        >
-          <Settings className="w-4 h-4" />
-          Settings
-        </Link>
-
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer mt-1">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            A
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-slate-200 truncate">Alex Kim</div>
-            <div className="text-xs text-slate-600 truncate">alex@company.com</div>
-          </div>
-        </div>
-      </div>
     </aside>
   )
 }
