@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS account_invitations (
+CREATE TABLE IF NOT EXISTS public.account_invitations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
   email text NOT NULL,
   role text NOT NULL DEFAULT 'member',
   invited_by_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS account_invitations (
   UNIQUE (account_id, email)
 );
 
-CREATE INDEX IF NOT EXISTS account_invitations_account_id_idx ON account_invitations(account_id);
-CREATE INDEX IF NOT EXISTS account_invitations_email_idx ON account_invitations(email);
+CREATE INDEX IF NOT EXISTS account_invitations_account_id_idx ON public.account_invitations(account_id);
+CREATE INDEX IF NOT EXISTS account_invitations_email_idx ON public.account_invitations(email);

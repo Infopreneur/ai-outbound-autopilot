@@ -83,13 +83,15 @@ async function createAccountForUser(user: User): Promise<AccountContext | null> 
       throw accountError
     }
 
-    const { error: membershipError } = await supabaseAdmin
+    const { data: membership, error: membershipError } = await supabaseAdmin
       .from('account_memberships')
       .insert({
         account_id: account.id,
         user_id: user.id,
         role: 'owner',
       })
+      .select('id')
+      .single()
 
     if (membershipError) {
       throw membershipError
@@ -98,13 +100,13 @@ async function createAccountForUser(user: User): Promise<AccountContext | null> 
     return {
       user,
       accessToken: await getAccessToken() ?? '',
-      membershipId: '',
+      membershipId: membership.id,
       accountId: account.id,
       accountName: account.name,
       accountSlug: account.slug,
       role: 'owner',
       memberships: [{
-        membershipId: '',
+        membershipId: membership.id,
         accountId: account.id,
         accountName: account.name,
         accountSlug: account.slug,
@@ -116,7 +118,7 @@ async function createAccountForUser(user: User): Promise<AccountContext | null> 
   return null
 }
 
-async function findMembership(userId: string) {
+async function findMemberships(userId: string) {
   const { data, error } = await supabaseAdmin
     .from('account_memberships')
     .select(`
@@ -131,14 +133,12 @@ async function findMembership(userId: string) {
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
 
   if (error) {
     throw error
   }
 
-  return data as MembershipRow[] | null
+  return (data ?? []) as MembershipRow[]
 }
 
 async function claimPendingInvites(user: User) {
@@ -183,8 +183,8 @@ export async function getAccountContext(): Promise<AccountContext | null> {
 
   await claimPendingInvites(data.user)
 
-  let memberships = await findMembership(data.user.id)
-  if (!memberships || memberships.length === 0) {
+  const memberships = await findMemberships(data.user.id)
+  if (memberships.length === 0) {
     return createAccountForUser(data.user)
   }
 
